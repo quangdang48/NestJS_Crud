@@ -4,8 +4,7 @@ import {
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
-import { Observable } from 'rxjs';
-import { AuthService } from '../../../auth/auth.service';
+import { AuthService } from '../../auth/auth.service';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
@@ -13,7 +12,7 @@ export class AuthGuard implements CanActivate {
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const req = context.switchToHttp().getRequest();
     const sessionId = req.headers['x-session-id'];
-    const session = await this.authService.validSession(sessionId);
+    const session = await this.authService.validateSession(sessionId);
     if (!session) {
       throw new UnauthorizedException('Session does not exist');
     }

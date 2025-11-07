@@ -10,8 +10,8 @@ async function bootstrap() {
   app.useGlobalPipes(new ValidationPipe({}));
   // Config swagger
   const swaggerConfig = new DocumentBuilder()
-    .setTitle('Cogniate Backend')
-    .setDescription('API documentation for Cogniate Backend')
+    .setTitle('Bookmark Backend')
+    .setDescription('API documentation for Bookmark Backend')
     .setVersion('1.0.0')
     .addApiKey(
       { type: 'apiKey', name: 'x-session-id', in: 'header' },

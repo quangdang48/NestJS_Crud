@@ -1,14 +1,16 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service';
-import { LoginRequestDto, RegisterRequestDto } from './dto/auth.request.dto';
 import {
-  LoginResponseDto,
-  LogoutResponseDto,
-  RegisterResponseDto,
-} from './dto/auth.response.dto';
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
+import { PrismaService } from '../prisma/prisma.service';
 import * as bcrypt from 'bcryptjs';
 import { plainToClass } from 'class-transformer';
 import { AuthSession, UserRole } from '@prisma/client';
+import { RegisterRequestDto } from './dto/request/register-request.dto';
+import { RegisterResponseDto } from './dto/response/register-response.dto';
+import { LoginRequestDto } from './dto/request/login-request.dto';
+import { LoginResponseDto } from './dto/response/login-response.dto';
 
 @Injectable({})
 export class AuthService {
@@ -31,11 +33,11 @@ export class AuthService {
     });
   }
   async login(loginDto: LoginRequestDto): Promise<LoginResponseDto> {
-    const user = await this.prismaService.user.findUnique({
+    const user = await this.prismaService.user.findFirst({
       where: { email: loginDto.email },
     });
     if (!user) {
-      throw new UnauthorizedException();
+      throw new NotFoundException('User not found');
     }
     if (!bcrypt.compareSync(loginDto.password, user.password))
       throw new UnauthorizedException();
@@ -52,7 +54,6 @@ export class AuthService {
         userId: userId,
         roleAtLogin: role,
         expiresAt: expiresAt,
-        isActive: true,
       },
     });
 
@@ -62,27 +63,55 @@ export class AuthService {
     };
     return plainToClass(LoginResponseDto, pickedFieldFromSession);
   }
-  async validSession(sessionId: string): Promise<AuthSession> {
-    if (!sessionId) {
-      throw new UnauthorizedException('Session ID not found');
-    }
-    const session = await this.prismaService.authSession.findUnique({
+  async validateSession(sessionId: string): Promise<AuthSession> {
+    // Get session
+    const session = await this.prismaService.authSession.findFirst({
       where: {
         id: sessionId,
+        isActive: true,
       },
     });
+    // Check session
     if (!session || session.expiresAt < new Date())
       throw new UnauthorizedException('Session invalid or expired');
+
+    // Get user with current session
+    const user = await this.prismaService.user.findFirst({
+      where: {
+        id: session.userId,
+        isActive: true,
+      },
+    });
+    if (!user) throw new UnauthorizedException('Session invalid or expired');
     return session;
   }
-  async logout(sessionId: string):
-    Promise<LogoutResponseDto> {
-    const deletedSession = await this.prismaService.authSession.delete({
+  async inValidateSession(sessionId: string): Promise<boolean> {
+    // Get session
+    const session = await this.prismaService.authSession.findFirst({
       where: {
         id: sessionId,
+        isActive: true,
       },
-    })
-    if (!deletedSession) throw new UnauthorizedException();
-    return new LogoutResponseDto({message: 'Logged out successfully'});
+    });
+    // Check session
+    if (!session || session.expiresAt < new Date())
+      throw new UnauthorizedException('Session invalid or expired');
+
+    // Get user with current session
+    const user = await this.prismaService.user.findFirst({
+      where: {
+        id: session.userId,
+        isActive: true,
+      },
+    });
+    if (!user) throw new UnauthorizedException('Session invalid or expired');
+
+    // Deactive session
+    const inValidatedSession = await this.prismaService.authSession.update({
+      where: { id: session.id },
+      data: { isActive: false },
+    });
+    if (!inValidatedSession) return false;
+    return true;
   }
 }

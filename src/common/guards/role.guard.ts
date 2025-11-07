@@ -12,9 +12,13 @@ export class RolesGuard implements CanActivate {
     if (!roles) {
       return true;
     }
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const request = context.switchToHttp().getRequest();
-    const matchRoles = (requiredRoles: string[], userRoles: string[]): boolean => {
-      return requiredRoles.some(role => userRoles.includes(role));
+    const matchRoles = (
+      requiredRoles: string[],
+      userRoles: string[],
+    ): boolean => {
+      return requiredRoles.some((role) => userRoles.includes(role));
     };
     return matchRoles(roles, [request.user.roleAtLogin]);
   }

@@ -18,21 +18,22 @@ enum UserRole{
 }
 model User {
   id   String @id @default(uuid())
-  createdAt DateTime @default(now())
-  updatedAt DateTime @default(now())
-  email String @unique
+  email String
   password String
-  salt String @unique
+  salt String
   firstName String
   lastName String
   role UserRole @default(CUSTOMER)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now())
+  isActive Boolean @default(true)
 }
 model AuthSession {
   id          String   @id @default(uuid())
   userId      String
   roleAtLogin UserRole
   expiresAt   DateTime
-  isActive    Boolean  @default(true)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+  isActive    Boolean  @default(true)
 }

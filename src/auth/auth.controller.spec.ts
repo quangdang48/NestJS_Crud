@@ -1,8 +1,8 @@
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
-import { LoginResponseDto, LogoutResponseDto } from './dto/auth.response.dto';
 import { UserRole } from '@prisma/client';
-import { LoginRequestDto } from './dto/auth.request.dto';
+import { LoginResponseDto } from './dto/response/login-response.dto';
+import { LoginRequestDto } from './dto/request/login-request.dto';
 
 describe('AuthController', () => {
   let authController: AuthController;
@@ -10,7 +10,7 @@ describe('AuthController', () => {
   beforeEach(() => {
     const prismaServiceMock = {
       user: {
-        findUnique: jest.fn(),
+        findFirst: jest.fn(),
         create: jest.fn(),
       },
     };
