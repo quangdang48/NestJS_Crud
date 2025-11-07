@@ -1,14 +1,19 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
-import { PrismaService } from 'src/prisma/prisma.service';
+import { PrismaService } from '../prisma/prisma.service';
 import { LoginRequestDto, RegisterRequestDto } from './dto/auth.request.dto';
-import { LoginResponseDto, RegisterResponseDto } from './dto/auth.response.dto';
-import bcrypt from 'node_modules/bcryptjs';
+import {
+  LoginResponseDto,
+  LogoutResponseDto,
+  RegisterResponseDto,
+} from './dto/auth.response.dto';
+import * as bcrypt from 'bcryptjs';
 import { plainToClass } from 'class-transformer';
 import { AuthSession, UserRole } from '@prisma/client';
 
 @Injectable({})
 export class AuthService {
   constructor(private readonly prismaService: PrismaService) {}
+
   async signup(registerDto: RegisterRequestDto): Promise<RegisterResponseDto> {
     const salt = bcrypt.genSaltSync(10);
     const hashedPassword = bcrypt.hashSync(registerDto.password, salt);
@@ -69,5 +74,15 @@ export class AuthService {
     if (!session || session.expiresAt < new Date())
       throw new UnauthorizedException('Session invalid or expired');
     return session;
+  }
+  async logout(sessionId: string):
+    Promise<LogoutResponseDto> {
+    const deletedSession = await this.prismaService.authSession.delete({
+      where: {
+        id: sessionId,
+      },
+    })
+    if (!deletedSession) throw new UnauthorizedException();
+    return new LogoutResponseDto({message: 'Logged out successfully'});
   }
 }

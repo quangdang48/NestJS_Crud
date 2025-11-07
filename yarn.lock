@@ -1044,9 +1044,9 @@
     path-to-regexp "8.3.0"
     swagger-ui-dist "5.29.4"
 
-"@nestjs/testing@^11.0.1":
+"@nestjs/testing@^11.1.8":
   version "11.1.8"
-  resolved "https://registry.npmjs.org/@nestjs/testing/-/testing-11.1.8.tgz"
+  resolved "https://registry.yarnpkg.com/@nestjs/testing/-/testing-11.1.8.tgz#b41855084e53cdea0fae5669fa0fb4792e49c687"
   integrity sha512-E6K+0UTKztcPxJzLnQa7S34lFjZbrj3Z1r7c5y5WDrL1m5HD1H4AeyBhicHgdaFmxjLAva2bq0sYKy/S7cdeYA==
   dependencies:
     tslib "2.8.1"
@@ -5077,7 +5077,7 @@ ts-loader@^9.5.2:
 
 ts-node@^10.9.2:
   version "10.9.2"
-  resolved "https://registry.npmjs.org/ts-node/-/ts-node-10.9.2.tgz"
+  resolved "https://registry.yarnpkg.com/ts-node/-/ts-node-10.9.2.tgz#70f021c9e185bccdca820e26dc413805c101c71f"
   integrity sha512-f0FFpIdcHgn8zcPSbf1dRevwt047YMnaiJM3u2w2RewrB+fob/zePZcrOyQoLMMO7aBIddLcQIEK5dYjkLnGrQ==
   dependencies:
     "@cspotcode/source-map-support" "^0.8.0"

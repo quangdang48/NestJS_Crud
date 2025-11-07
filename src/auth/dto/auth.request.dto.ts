@@ -8,7 +8,22 @@ import {
 } from 'class-validator';
 
 export class LoginRequestDto {
+  @ApiProperty({
+    description: 'Email login for user',
+    minimum: 1,
+    default: 'example@gmail.com',
+  })
+  @IsEmail()
   email: string;
+
+  @ApiProperty({
+    description: 'passowrd login for user',
+    minimum: 1,
+    default: '123456',
+  })
+  @IsNotEmpty()
+  @MinLength(6)
+  @MaxLength(20)
   password: string;
 }
 export class RegisterRequestDto {
@@ -26,8 +41,8 @@ export class RegisterRequestDto {
     default: '123456',
   })
   @IsNotEmpty()
-  @MaxLength(20)
   @MinLength(6)
+  @MaxLength(20)
   password: string;
 
   @ApiProperty({

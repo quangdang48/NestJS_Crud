@@ -10,8 +10,14 @@ export class TestController {
 
   @UseGuards(AuthGuard,RolesGuard)
   @Roles(['CUSTOMER'])
-  @Get('main')
-  test() {
-    return 'Test controller';
+  @Get('customer')
+  testRoleCustomer() {
+    return 'Test controller customer';
+  }
+  @UseGuards(AuthGuard,RolesGuard)
+  @Roles(['ADMIN'])
+  @Get('admin')
+  testRoleAdmin() {
+    return 'Test controller admin';
   }
 }
