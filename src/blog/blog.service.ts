@@ -7,7 +7,6 @@ import { BlogResponseDto } from './dto/response/blog-response.dto';
 @Injectable()
 export class BlogService {
   constructor(private readonly prismaService: PrismaService) {}
-  // Get blog by ID
   async getBlogById(id: string): Promise<BlogResponseDto> {
     const blog = await this.prismaService.blog.findFirst({
       where: { id: id, isActive: true },
@@ -17,7 +16,6 @@ export class BlogService {
     }
     return BlogResponseDto.fromEntity(blog);
   }
-  // Delete blog by ID
   async deleteBlog(
     blogId: string,
     authorId: string,
@@ -33,7 +31,6 @@ export class BlogService {
     });
     return { message: 'Blog deleted successfully' };
   }
-  // Create new blog
   async createBlog(
     newBlog: CreateBlogRequestDto,
   ): Promise<CreateBlogResponseDto> {
@@ -55,14 +52,12 @@ export class BlogService {
     // Return value mapped to CreateBlogResponseDto
     return CreateBlogResponseDto.fromEntity(createdBlog);
   }
-  // Get all blogs
   async getAllBlogs(): Promise<BlogResponseDto[]> {
     const blogs = await this.prismaService.blog.findMany({
       where: { isActive: true },
     });
     return blogs.map((blog) => BlogResponseDto.fromEntity(blog));
   }
-  // Get blogs by author ID
   async getBlogsByAuthorId(authorId: string): Promise<BlogResponseDto[]> {
     // Check existing author
     const author = await this.prismaService.user.findFirst({
@@ -77,13 +72,15 @@ export class BlogService {
     });
     return blogs.map((blog) => BlogResponseDto.fromEntity(blog));
   }
-  async checkOwnerShip(blogAuthorId: string, userId: string): Promise<boolean> {
+  async checkOwnerShip(blogId: string, userId: string): Promise<boolean> {
     const blog = await this.prismaService.blog.findFirst({
-      where: { authorId: blogAuthorId, isActive: true },
+      where: { id: blogId, isActive: true },
     });
+
     if (!blog) {
       throw new NotFoundException('Blog not found');
     }
+
     return blog.authorId === userId;
   }
 }
