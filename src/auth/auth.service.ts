@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import * as bcrypt from 'bcryptjs';
-import { AuthSession, UserRole } from '@prisma/client';
+import { UserRole } from '@prisma/client';
 import { RegisterRequestDto } from './dto/request/register-request.dto';
 import { RegisterResponseDto } from './dto/response/register-response.dto';
 import { LoginRequestDto } from './dto/request/login-request.dto';
