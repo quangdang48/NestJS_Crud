@@ -19,7 +19,6 @@ export class BlogService {
   }
   // Delete blog by ID
   async deleteBlog(id: string): Promise<{ message: string }> {
-    // Check existing blog
     const blog = await this.prismaService.blog.findFirst({
       where: { id: id, isActive: true },
     });
@@ -27,11 +26,11 @@ export class BlogService {
       throw new NotFoundException('Blog not found');
     }
     // Implementation for deleting a blog entry
-    const updatedBlog = await this.prismaService.blog.update({
+    const deletedBlog = await this.prismaService.blog.update({
       where: { id: id, isActive: true },
       data: { isActive: false },
     });
-    if (!updatedBlog) {
+    if (!deletedBlog) {
       throw new Error('Blog deletion failed');
     }
     return { message: 'Blog deleted successfully' };

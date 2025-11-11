@@ -6,6 +6,7 @@ import {
   Param,
   ParseUUIDPipe,
   Post,
+  UseGuards,
 } from '@nestjs/common';
 import { BlogService } from './blog.service';
 import { CreateBlogRequestDto } from './dto/request/create-blog.dto';
@@ -14,10 +15,12 @@ import { BlogResponseDto } from './dto/response/blog-response.dto';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Roles } from 'src/common/decorators/roles.decorator';
 import { UserRole } from '@prisma/client';
+import { AuthGuard } from 'src/common/guards/auth.guard';
+import { RolesGuard } from 'src/common/guards/role.guard';
 
 @ApiTags('Blogs')
 @Controller('blogs')
-// @UseGuards(AuthGuard, RolesGuard)
+@UseGuards(AuthGuard, RolesGuard)
 export class BlogController {
   constructor(private blogService: BlogService) {}
 
@@ -28,6 +31,7 @@ export class BlogController {
     description: 'List of blogs',
   })
   @Get()
+  @Roles([UserRole.ADMIN])
   getAllBlogs(): Promise<BlogResponseDto[]> {
     return this.blogService.getAllBlogs();
   }
@@ -44,6 +48,7 @@ export class BlogController {
     description: 'Blog not found',
   })
   @Get(':blogId')
+  @Roles([UserRole.ADMIN, UserRole.CUSTOMER])
   getBlogByID(
     @Param('blogId', ParseUUIDPipe) id: string,
   ): Promise<BlogResponseDto> {
@@ -69,6 +74,7 @@ export class BlogController {
     description: 'Delete blog response',
   })
   @Delete(':blogId')
+  @Roles([UserRole.ADMIN, UserRole.CUSTOMER])
   deleteBlog(
     @Param('blogId', ParseUUIDPipe) id: string,
   ): Promise<{ message: string }> {
