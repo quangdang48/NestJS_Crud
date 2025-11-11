@@ -97,7 +97,7 @@ export class AuthService {
     const sessionUser: SessionUser = {
       userId: user.id,
       sessionId: session.id,
-      email: user.email ?? undefined,
+      email: user.email,
       roles: user.role,
     };
     return sessionUser;
