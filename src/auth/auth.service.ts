@@ -34,7 +34,7 @@ export class AuthService {
   }
   async login(loginDto: LoginRequestDto): Promise<LoginResponseDto> {
     const user = await this.prismaService.user.findFirst({
-      where: { email: loginDto.email },
+      where: { email: loginDto.email, isActive: true },
     });
     if (!user) {
       throw new NotFoundException('User not found');

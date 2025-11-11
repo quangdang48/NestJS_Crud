@@ -3,6 +3,8 @@ import { AuthModule } from './auth/auth.module';
 import { ConfigModule } from '@nestjs/config';
 import { PrismaModule } from './prisma/prisma.module';
 import { TestModule } from './test/test.module';
+import { BlogModule } from './blog/blog.module';
+import { NationalModule } from './national/national.module';
 
 @Module({
   imports: [
@@ -12,7 +14,9 @@ import { TestModule } from './test/test.module';
       envFilePath: ['.env'],
     }),
     PrismaModule,
+    BlogModule,
     TestModule,
+    NationalModule,
   ],
 })
 export class AppModule {}

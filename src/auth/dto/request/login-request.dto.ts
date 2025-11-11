@@ -13,7 +13,7 @@ export class LoginRequestDto {
     description: 'password login for user',
     minLength: 8,
     maxLength: 20,
-    default: '12345678',
+    default: '',
   })
   @IsNotEmpty()
   @MinLength(8)
