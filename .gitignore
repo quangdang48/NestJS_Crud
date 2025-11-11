@@ -21,6 +21,7 @@ lerna-debug.log*
 
 # IDEs and editors
 /.idea
+/.vscode
 .project
 .classpath
 .c9/
@@ -58,3 +59,5 @@ report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
 /generated/prisma
 
 /generated/prisma
+
+migration*/
