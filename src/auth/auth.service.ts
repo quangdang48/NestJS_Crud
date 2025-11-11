@@ -47,7 +47,7 @@ export class AuthService {
     userId: string,
     role: UserRole,
   ): Promise<LoginResponseDto> {
-    const sessionDurationHours = 1;
+    const sessionDurationHours = 24; // 24 hours
     const expiresAt = new Date(Date.now() + sessionDurationHours * 3600 * 1000);
     const session = await this.prismaService.authSession.create({
       data: {
