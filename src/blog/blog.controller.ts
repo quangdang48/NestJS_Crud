@@ -6,6 +6,7 @@ import {
   Param,
   ParseUUIDPipe,
   Post,
+  Req,
   UseGuards,
 } from '@nestjs/common';
 import { BlogService } from './blog.service';
@@ -17,6 +18,7 @@ import { Roles } from 'src/common/decorators/roles.decorator';
 import { UserRole } from '@prisma/client';
 import { AuthGuard } from 'src/common/guards/auth.guard';
 import { RolesGuard } from 'src/common/guards/role.guard';
+import { Request } from 'express';
 
 @ApiTags('Blogs')
 @Controller('blogs')
@@ -48,7 +50,6 @@ export class BlogController {
     description: 'Blog not found',
   })
   @Get(':blogId')
-  @Roles([UserRole.ADMIN, UserRole.CUSTOMER])
   getBlogByID(
     @Param('blogId', ParseUUIDPipe) id: string,
   ): Promise<BlogResponseDto> {
@@ -64,7 +65,9 @@ export class BlogController {
   @Post()
   createNewBlog(
     @Body() newBlog: CreateBlogRequestDto,
+    @Req() req: Request,
   ): Promise<CreateBlogResponseDto> {
+    newBlog.authorId = req.user.userId;
     return this.blogService.createBlog(newBlog);
   }
   // Delete blog by ID
@@ -76,9 +79,10 @@ export class BlogController {
   @Delete(':blogId')
   @Roles([UserRole.ADMIN, UserRole.CUSTOMER])
   deleteBlog(
-    @Param('blogId', ParseUUIDPipe) id: string,
+    @Param('blogId', ParseUUIDPipe) blogId: string,
+    @Req() req: Request,
   ): Promise<{ message: string }> {
-    return this.blogService.deleteBlog(id);
+    return this.blogService.deleteBlog(blogId, req.user.userId);
   }
   // Get blogs by Author ID
   @ApiOperation({ summary: 'Get blogs by Author ID' })
@@ -86,6 +90,7 @@ export class BlogController {
     status: 200,
     description: 'List of blogs by author',
   })
+  @Roles([UserRole.ADMIN])
   @Get('author/:authorId')
   getBlogByAuthorId(
     @Param('authorId', ParseUUIDPipe) authorId: string,

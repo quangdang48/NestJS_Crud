@@ -22,13 +22,5 @@ export class CreateBlogRequestDto {
     maxLength: 1000,
   })
   content: string;
-
-  @ApiProperty({
-    description: 'Author ID of the blog',
-    default: 'authorId',
-    nullable: false,
-  })
-  @IsNotEmpty()
-  @IsUUID()
   authorId: string;
 }

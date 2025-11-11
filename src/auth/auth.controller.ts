@@ -4,6 +4,7 @@ import { AuthGuard } from '../common/guards/auth.guard';
 import { LoginRequestDto } from './dto/request/login-request.dto';
 import { RegisterRequestDto } from './dto/request/register-request.dto';
 import { RegisterResponseDto } from './dto/response/register-response.dto';
+import { Request } from 'express';
 
 @Controller('auth')
 export class AuthController {
@@ -22,9 +23,6 @@ export class AuthController {
   @Post('logout')
   @UseGuards(AuthGuard)
   async logout(@Req() req: Request): Promise<{ message: string }> {
-    const sessionId = (req as any).user.sessionId;
-    const result = await this.authService.inValidateSession(sessionId);
-    if (!result) return { message: `Logout failed` };
-    return { message: `Logged out successfully` };
+    return this.authService.logout(req.user.userId);
   }
 }

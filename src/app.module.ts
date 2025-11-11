@@ -2,7 +2,6 @@ import { Module } from '@nestjs/common';
 import { AuthModule } from './auth/auth.module';
 import { ConfigModule } from '@nestjs/config';
 import { PrismaModule } from './prisma/prisma.module';
-import { TestModule } from './test/test.module';
 import { BlogModule } from './blog/blog.module';
 import { NationalModule } from './national/national.module';
 
@@ -15,7 +14,6 @@ import { NationalModule } from './national/national.module';
     }),
     PrismaModule,
     BlogModule,
-    TestModule,
     NationalModule,
   ],
 })

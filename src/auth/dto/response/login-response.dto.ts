@@ -7,4 +7,8 @@ export class LoginResponseDto {
   }
   sessionId: string;
   role: UserRole;
+
+  static fromEntity(entity: any): LoginResponseDto {
+    return new LoginResponseDto(entity.sessionId, entity.role);
+  }
 }

@@ -1,5 +1,6 @@
 import { Injectable, CanActivate, ExecutionContext } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
+import { Request } from 'express';
 import { Roles } from 'src/common/decorators/roles.decorator';
 
 @Injectable()
@@ -9,19 +10,17 @@ export class RolesGuard implements CanActivate {
   canActivate(context: ExecutionContext): boolean {
     //Get roles from reflector
     const roles = this.reflector.get(Roles, context.getHandler());
-    console.log(roles);
-    return true;
     if (!roles) {
       return true;
     }
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    const request = context.switchToHttp().getRequest();
+    // Get request object
+    const request = context.switchToHttp().getRequest<Request>();
     const matchRoles = (
       requiredRoles: string[],
       userRoles: string[],
     ): boolean => {
       return requiredRoles.some((role) => userRoles.includes(role));
     };
-    return matchRoles(roles, [request.user.roleAtLogin]);
+    return matchRoles(roles, [request.user.roles]);
   }
 }

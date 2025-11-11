@@ -4,7 +4,7 @@ import { CreateBlogResponseDto } from './dto/response/create-blog.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { BlogResponseDto } from './dto/response/blog-response.dto';
 
-@Injectable({})
+@Injectable()
 export class BlogService {
   constructor(private readonly prismaService: PrismaService) {}
   // Get blog by ID
@@ -18,21 +18,19 @@ export class BlogService {
     return BlogResponseDto.fromEntity(blog);
   }
   // Delete blog by ID
-  async deleteBlog(id: string): Promise<{ message: string }> {
-    const blog = await this.prismaService.blog.findFirst({
-      where: { id: id, isActive: true },
-    });
-    if (!blog) {
-      throw new NotFoundException('Blog not found');
+  async deleteBlog(
+    blogId: string,
+    authorId: string,
+  ): Promise<{ message: string }> {
+    const isOwner = await this.checkOwnerShip(blogId, authorId);
+    if (!isOwner) {
+      throw new NotFoundException('Blog not found or you are not the owner');
     }
     // Implementation for deleting a blog entry
-    const deletedBlog = await this.prismaService.blog.update({
-      where: { id: id, isActive: true },
-      data: { isActive: false },
+    await this.prismaService.blog.update({
+      where: { id: blogId, isActive: true },
+      data: { isActive: false, deletedAt: new Date() },
     });
-    if (!deletedBlog) {
-      throw new Error('Blog deletion failed');
-    }
     return { message: 'Blog deleted successfully' };
   }
   // Create new blog
@@ -41,7 +39,7 @@ export class BlogService {
   ): Promise<CreateBlogResponseDto> {
     // Check existing author
     const author = await this.prismaService.user.findFirst({
-      where: { id: newBlog.authorId, isActive: true },
+      where: { isActive: true },
     });
     if (!author) {
       throw new NotFoundException('Author not found');
@@ -54,9 +52,6 @@ export class BlogService {
         authorId: newBlog.authorId,
       },
     });
-    if (!createdBlog) {
-      throw new Error('Blog creation failed');
-    }
     // Return value mapped to CreateBlogResponseDto
     return CreateBlogResponseDto.fromEntity(createdBlog);
   }
