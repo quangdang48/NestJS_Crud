@@ -25,7 +25,18 @@ model User {
   lastName String
   role UserRole @default(CUSTOMER)
   createdAt DateTime @default(now())
-  updatedAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  deletedAt DateTime?
+  isActive Boolean @default(true)
+}
+model Blog {
+  id String @id @default(uuid())
+  title String 
+  content String
+  authorId String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  deletedAt DateTime?
   isActive Boolean @default(true)
 }
 model AuthSession {
@@ -35,5 +46,6 @@ model AuthSession {
   expiresAt   DateTime
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+  deletedAt   DateTime?
   isActive    Boolean  @default(true)
 }
