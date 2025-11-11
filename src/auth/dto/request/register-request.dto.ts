@@ -10,7 +10,6 @@ import {
 export class RegisterRequestDto {
   @ApiProperty({
     description: 'Email register for user',
-    minimum: 1,
     default: 'example@gmail.com',
   })
   @IsEmail()
@@ -18,7 +17,6 @@ export class RegisterRequestDto {
 
   @ApiProperty({
     description: 'Password register for user',
-    minimum: 1,
     default: '12345678',
   })
   @IsNotEmpty()
