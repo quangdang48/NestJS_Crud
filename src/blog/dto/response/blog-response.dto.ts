@@ -1,4 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { Blog } from '@prisma/client';
 
 export class BlogResponseDto {
   @ApiProperty({
@@ -21,12 +22,20 @@ export class BlogResponseDto {
     default: '2a7f3e1d-8c4b-4d2e-9f3b-1e2d3c4b5a6f',
   })
   authorId: string;
-  static fromEntity(entity: any): BlogResponseDto {
+
+  @ApiProperty({
+    description: 'Creation date of the blog',
+    default: '2023-10-01T12:00:00Z',
+  })
+  createdAt: Date;
+
+  static fromEntity(entity: Blog): BlogResponseDto {
     const dto = new BlogResponseDto();
     dto.id = entity.id;
     dto.title = entity.title;
     dto.content = entity.content;
     dto.authorId = entity.authorId;
+    dto.createdAt = entity.createdAt;
     return dto;
   }
 }
