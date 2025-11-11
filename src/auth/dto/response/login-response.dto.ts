@@ -1,4 +1,5 @@
 import { UserRole } from '@prisma/client';
+import { SessionUser } from 'src/auth/interface/session-user.interface';
 
 export class LoginResponseDto {
   constructor(sessionId: string, role: UserRole) {
@@ -8,7 +9,7 @@ export class LoginResponseDto {
   sessionId: string;
   role: UserRole;
 
-  static fromEntity(entity: any): LoginResponseDto {
+  static fromEntity(entity: SessionUser): LoginResponseDto {
     return new LoginResponseDto(entity.sessionId, entity.role);
   }
 }

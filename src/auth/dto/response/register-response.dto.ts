@@ -1,3 +1,4 @@
+import { User } from '@prisma/client';
 import { Expose } from 'class-transformer';
 
 export class RegisterResponseDto {
@@ -10,7 +11,7 @@ export class RegisterResponseDto {
   @Expose()
   lastName: string;
 
-  static fromEntity(entity: any): RegisterResponseDto {
+  static fromEntity(entity: User): RegisterResponseDto {
     const dto = new RegisterResponseDto();
     dto.id = entity.id;
     dto.email = entity.email;

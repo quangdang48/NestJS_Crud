@@ -68,7 +68,7 @@ export class AuthService {
       },
     });
     // Map to LoginResponseDto
-    const pickedFieldFromSession = {
+    const pickedFieldFromSession: SessionUser = {
       sessionId: session.id,
       role: session.roleAtLogin,
     };
@@ -98,7 +98,7 @@ export class AuthService {
       userId: user.id,
       sessionId: session.id,
       email: user.email,
-      roles: user.role,
+      role: user.role,
     };
     return sessionUser;
   }
