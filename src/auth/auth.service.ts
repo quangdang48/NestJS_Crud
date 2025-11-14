@@ -1,5 +1,4 @@
 import {
-  ConflictException,
   Injectable,
   NotFoundException,
   UnauthorizedException,
@@ -12,33 +11,31 @@ import { RegisterResponseDto } from './dto/response/register-response.dto';
 import { LoginRequestDto } from './dto/request/login-request.dto';
 import { LoginResponseDto } from './dto/response/login-response.dto';
 import { SessionUser } from './interface/session-user.interface';
+import { CreateUserDto } from 'src/user/dto/request/create-user.dto';
+import { UserService } from 'src/user/user.service';
+import { UserResponseDto } from 'src/user/dto/response/user-response.dto';
 
 @Injectable()
 export class AuthService {
-  constructor(private readonly prismaService: PrismaService) {}
+  constructor(
+    private readonly prismaService: PrismaService,
+    private readonly userService: UserService,
+  ) {}
 
   async signup(registerDto: RegisterRequestDto): Promise<RegisterResponseDto> {
-    // Check existing user
-    const userExists = await this.prismaService.user.findFirst({
-      where: { email: registerDto.email, isActive: true },
-    });
-    if (userExists) {
-      throw new ConflictException('User already exists');
-    }
-    // Hash password
-    const salt = bcrypt.genSaltSync(10);
-    const hashedPassword = bcrypt.hashSync(registerDto.password, salt);
-    // Create user
-    const user = await this.prismaService.user.create({
-      data: {
-        email: registerDto.email,
-        firstName: registerDto.firstName,
-        lastName: registerDto.lastName,
-        password: hashedPassword,
-        salt: salt,
-      },
-    });
-    return RegisterResponseDto.fromEntity(user);
+    const user: CreateUserDto = {
+      email: registerDto.email,
+      firstName: registerDto.firstName,
+      lastName: registerDto.lastName,
+      password: registerDto.password,
+    };
+    const savedUser: UserResponseDto = await this.userService.create(user);
+    return {
+      id: savedUser.id,
+      email: savedUser.email,
+      firstName: savedUser.firstName,
+      lastName: savedUser.lastName,
+    };
   }
   async login(loginDto: LoginRequestDto): Promise<LoginResponseDto> {
     // Find user by email
@@ -106,7 +103,7 @@ export class AuthService {
     // Deactivate current session
     const updatedSession = await this.prismaService.authSession.updateMany({
       where: { userId: userId, isActive: true },
-      data: { isActive: false },
+      data: { isActive: false, deletedAt: new Date() },
     });
 
     if (!updatedSession) {

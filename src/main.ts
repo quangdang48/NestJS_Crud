@@ -30,6 +30,7 @@ async function bootstrap() {
     swaggerOptions: {
       persistAuthorization: true,
     },
+    jsonDocumentUrl: 'api/docs-json',
   });
   // App listen
   await app.listen(process.env.PORT ?? 3000);

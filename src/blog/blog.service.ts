@@ -64,13 +64,14 @@ export class BlogService {
 
   /** Create a new blog */
   async createBlog(
+    userId: string,
     newBlog: CreateBlogRequestDto,
   ): Promise<CreateBlogResponseDto> {
     const createdBlog = await this.prismaService.blog.create({
       data: {
         title: newBlog.title,
         content: newBlog.content,
-        authorId: newBlog.authorId,
+        authorId: userId,
       },
     });
     return CreateBlogResponseDto.fromEntity(createdBlog);
@@ -84,8 +85,11 @@ export class BlogService {
     const blog = await this.prismaService.blog.findFirst({
       where: { id: blogId, isActive: true },
     });
-    if (!blog || blog.authorId !== userId) {
-      throw new NotFoundException('Blog not found or you are not the owner');
+    if (!blog) {
+      throw new NotFoundException('Blog not found');
+    }
+    if (blog.authorId !== userId) {
+      throw new NotFoundException('You are not the owner of this blog');
     }
 
     await this.prismaService.blog.update({
@@ -94,14 +98,5 @@ export class BlogService {
     });
 
     return { message: 'Blog deleted successfully' };
-  }
-  /** Get all blogs by author ID */
-  async getBlogsByAuthorId(authorId: string): Promise<BlogResponseDto[]> {
-    const blogs = await this.prismaService.blog.findMany({
-      where: { authorId, isActive: true },
-    });
-    if (!blogs.length)
-      throw new NotFoundException('No blogs found for this author');
-    return blogs.map((blog) => BlogResponseDto.fromEntity(blog));
   }
 }

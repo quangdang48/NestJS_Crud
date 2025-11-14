@@ -22,5 +22,4 @@ export class CreateBlogRequestDto {
     maxLength: 1000,
   })
   content: string;
-  authorId: string;
 }

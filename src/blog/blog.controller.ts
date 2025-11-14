@@ -33,7 +33,7 @@ export class BlogController {
    * Get blogs of logged-in user (supports pagination & search)
    */
   @Get('user')
-  @Roles([UserRole.ADMIN, UserRole.CUSTOMER])
+  @Roles([UserRole.CUSTOMER])
   @ApiOperation({
     summary: 'Get blogs of current user with pagination & search',
   })
@@ -41,33 +41,6 @@ export class BlogController {
     status: 200,
     description: 'Paginated blogs of user',
     type: BlogPageDto,
-  })
-  @ApiQuery({
-    name: 'search',
-    required: false,
-    description: 'Search by blog title',
-    type: String,
-  })
-  @ApiQuery({
-    name: 'pageNumber',
-    required: false,
-    description: 'Page number',
-    type: Number,
-    example: 1,
-  })
-  @ApiQuery({
-    name: 'pageSize',
-    required: false,
-    description: 'Number of items per page',
-    type: Number,
-    example: 10,
-  })
-  @ApiQuery({
-    name: 'order',
-    required: false,
-    description: 'Order ASC/DESC',
-    enum: ['ASC', 'DESC'],
-    example: 'ASC',
   })
   getBlogsOfUser(
     @Query() blogOptionsDto: BlogOptionDto,
@@ -80,7 +53,7 @@ export class BlogController {
    * Get blog by ID
    */
   @Get(':blogId')
-  @Roles([UserRole.ADMIN, UserRole.CUSTOMER])
+  @Roles([UserRole.CUSTOMER])
   @ApiOperation({ summary: 'Get blog by ID' })
   @ApiResponse({
     status: 200,
@@ -109,15 +82,15 @@ export class BlogController {
     @Body() newBlog: CreateBlogRequestDto,
     @Req() req: Request,
   ): Promise<CreateBlogResponseDto> {
-    newBlog.authorId = req.user.userId;
-    return this.blogService.createBlog(newBlog);
+    const userId = req.user.userId;
+    return this.blogService.createBlog(userId, newBlog);
   }
 
   /**
    * Delete a blog by ID
    */
   @Delete(':blogId')
-  @Roles([UserRole.ADMIN, UserRole.CUSTOMER])
+  @Roles([UserRole.CUSTOMER])
   @ApiOperation({ summary: 'Delete a blog by ID' })
   @ApiResponse({
     status: 200,
@@ -143,10 +116,13 @@ export class BlogController {
     description: 'Blogs of specified author',
     type: [BlogResponseDto],
   })
-  @ApiResponse({ status: 404, description: 'Author not found or no blogs' })
   getBlogByAuthorId(
     @Param('authorId', ParseUUIDPipe) authorId: string,
-  ): Promise<BlogResponseDto[]> {
-    return this.blogService.getBlogsByAuthorId(authorId);
+    @Query() blogOptionsDto: BlogOptionDto,
+  ): Promise<BlogPageDto> {
+    return this.blogService.getBlogsOfUser(blogOptionsDto, authorId);
   }
+  /**
+   * Get blogs by Author ID
+   */
 }
