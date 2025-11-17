@@ -28,7 +28,6 @@ export class AuthGuard implements CanActivate {
 
     // Assign session to req.user
     req.user = session;
-    console.log(req.user);
     return true;
   }
 }

@@ -37,6 +37,6 @@ export class UserOptionDto extends PageOptionsDto {
     example: 'example@gmail.com',
   })
   @IsOptional()
-  @IsEmail()
+  @IsString()
   readonly email?: string;
 }

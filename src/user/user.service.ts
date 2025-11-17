@@ -5,86 +5,90 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { UserResponseDto } from './dto/response/user-response.dto';
 import * as bcrypt from 'bcryptjs';
 import { Prisma, UserRole } from '@prisma/client';
-import { plainToClass } from 'class-transformer';
-import { validate, ValidationError } from 'class-validator';
 import {
+  ErrorCodeImportUser,
+  ErrorMessageMap,
+  FailedField,
   FailedImport,
   ImportUserResponseDto,
-  ReasonFailed,
 } from './dto/response/import-file-response.dto';
 import { UserOptionDto } from './dto/request/user-option';
 import { Order } from 'src/common/dto';
+import { ImportUserDto } from './dto/request/import-user.dto';
 
 @Injectable()
 export class UserService {
   constructor(private readonly prismaService: PrismaService) {}
-
   async importUserInformation(
     file: Express.Multer.File,
   ): Promise<ImportUserResponseDto> {
     if (!file || !file.buffer) {
       throw new Error('File buffer is empty!');
     }
-
     const csvString = file.buffer.toString('utf-8');
-
-    const results: Papa.ParseResult<CreateUserDto> = Papa.parse(csvString, {
+    const results: Papa.ParseResult<ImportUserDto> = Papa.parse(csvString, {
       header: true,
       delimiter: ';',
       skipEmptyLines: true,
     });
-
     const users = results.data;
     const imported: string[] = [];
     const failed: FailedImport[] = [];
-
     for (let i = 0; i < users.length; i++) {
       try {
         const userData = users[i];
-
         if (!userData || Object.keys(userData).length === 0) {
           continue;
         }
-
-        const userDto = plainToClass(CreateUserDto, userData);
-        const errors: ValidationError[] = await validate(userDto);
-        if (errors.length > 0) {
-          const failedImport: FailedImport =
-            this.getFailedImportFromValidationError(i + 1, errors);
-          failed.push(failedImport);
-          continue;
-        }
-        const userExists = await this.prismaService.user.findFirst({
-          where: { email: userDto.email, isActive: true },
-        });
-        if (userExists) {
+        const mappedData: CreateUserDto = {
+          firstName: userData['First Name'] || '',
+          lastName: userData['Last Name'] || '',
+          email: userData['Email'] || '',
+          password: userData['Password'] || '',
+        };
+        const basicValidation = this.validateBasicUserData(mappedData);
+        if (basicValidation.length > 0) {
           failed.push({
             row: i + 1,
-            descriptions: [
-              {
-                property: 'email',
-                reason: [`User with email ${userDto.email} already exists`],
-              },
-            ],
+            email: mappedData.email,
+            descriptions: basicValidation,
           });
           continue;
         }
-        const result: { salt: string; hashedPassword: string } =
-          this.hashedPassword(userDto.password);
-
-        const createdUser = await this.prismaService.user.create({
-          data: {
-            email: userDto.email,
-            firstName: userDto.firstName,
-            lastName: userDto.lastName,
-            password: result.hashedPassword,
-            salt: result.salt,
-            role: UserRole.CUSTOMER,
-          },
+        const userExists = await this.prismaService.user.findFirst({
+          where: { email: mappedData.email, isActive: true },
         });
 
-        if (createdUser) {
-          imported.push(userDto.email);
+        const result: { salt: string; hashedPassword: string } =
+          this.hashedPassword(mappedData.password);
+
+        if (userExists) {
+          const updatedUser = await this.prismaService.user.update({
+            where: { id: userExists.id },
+            data: {
+              firstName: mappedData.firstName,
+              lastName: mappedData.lastName,
+            },
+          });
+
+          if (updatedUser) {
+            imported.push(`${mappedData.email} (updated)`);
+          }
+        } else {
+          const createdUser = await this.prismaService.user.create({
+            data: {
+              email: mappedData.email,
+              firstName: mappedData.firstName,
+              lastName: mappedData.lastName,
+              password: result.hashedPassword,
+              salt: result.salt,
+              role: UserRole.CUSTOMER,
+            },
+          });
+
+          if (createdUser) {
+            imported.push(`${mappedData.email} (created)`);
+          }
         }
       } catch (error) {
         console.error('Import error at row', i + 1, ':', error.message);
@@ -93,39 +97,81 @@ export class UserService {
           descriptions: [
             {
               property: 'error',
-              reason: [error.message],
+              reason: [ErrorMessageMap[ErrorCodeImportUser.DATABASE_ERROR]],
             },
           ],
         });
       }
     }
-
     return {
       message: `Import completed! Imported: ${imported.length}, Failed: ${failed.length}`,
       imported: imported,
       failed: failed,
     };
   }
-  getFailedImportFromValidationError(
-    row: number,
-    errors: ValidationError[],
-  ): FailedImport {
-    const reasonFailed: ReasonFailed[] = [];
-    errors.forEach((error) => {
-      const constraints = error.constraints;
-      const propertiesError = error.property;
-      if (constraints) {
-        const reasons = Object.values(constraints);
-        reasonFailed.push({
-          property: propertiesError,
-          reason: reasons,
-        });
-      }
-    });
-    return {
-      row: row,
-      descriptions: reasonFailed,
-    };
+  validateBasicUserData(userData: CreateUserDto): FailedField[] {
+    const reasons: FailedField[] = [];
+    // Validate firstName
+    if (!userData.firstName || userData.firstName.trim() === '') {
+      reasons.push({
+        property: 'firstName',
+        reason: [ErrorMessageMap[ErrorCodeImportUser.FIRST_NAME_INVALID]],
+      });
+    } else if (
+      userData.firstName.length < 2 ||
+      userData.firstName.length > 30
+    ) {
+      reasons.push({
+        property: 'firstName',
+        reason: [ErrorMessageMap[ErrorCodeImportUser.FIRST_NAME_INVALID]],
+      });
+    }
+
+    // Validate lastName
+    if (!userData.lastName || userData.lastName.trim() === '') {
+      reasons.push({
+        property: 'lastName',
+        reason: [ErrorMessageMap[ErrorCodeImportUser.LAST_NAME_REQUIRED]],
+      });
+    } else if (userData.lastName.length < 2 || userData.lastName.length > 30) {
+      reasons.push({
+        property: 'lastName',
+        reason: [ErrorMessageMap[ErrorCodeImportUser.LAST_NAME_INVALID]],
+      });
+    }
+
+    // Validate email
+    if (!userData.email || userData.email.trim() === '') {
+      reasons.push({
+        property: 'email',
+        reason: [ErrorMessageMap[ErrorCodeImportUser.EMAIL_REQUIRED]],
+      });
+    } else if (!/^\S+@\S+\.\S+$/.test(userData.email)) {
+      reasons.push({
+        property: 'email',
+        reason: [ErrorMessageMap[ErrorCodeImportUser.EMAIL_INVALID]],
+      });
+    }
+
+    // Validate password
+    if (!userData.password || userData.password.trim() === '') {
+      reasons.push({
+        property: 'password',
+        reason: [ErrorMessageMap[ErrorCodeImportUser.PASSWORD_REQUIRED]],
+      });
+    } else if (userData.password.length < 8) {
+      reasons.push({
+        property: 'password',
+        reason: [ErrorMessageMap[ErrorCodeImportUser.PASSWORD_TOO_SHORT]],
+      });
+    } else if (userData.password.length > 20) {
+      reasons.push({
+        property: 'password',
+        reason: [ErrorMessageMap[ErrorCodeImportUser.PASSWORD_TOO_LONG]],
+      });
+    }
+
+    return reasons;
   }
   hashedPassword(password: string): { salt: string; hashedPassword: string } {
     const salt = bcrypt.genSaltSync(10);
@@ -136,7 +182,6 @@ export class UserService {
     userOptionDto: UserOptionDto,
   ): Promise<string> {
     const where = {
-      email: userOptionDto.email,
       isActive: true,
       role: UserRole.CUSTOMER,
       ...(userOptionDto.firstName
@@ -155,6 +200,14 @@ export class UserService {
             },
           }
         : {}),
+      ...(userOptionDto.email
+        ? {
+            email: {
+              contains: userOptionDto.email,
+              mode: Prisma.QueryMode.insensitive,
+            },
+          }
+        : {}),
     };
     const orderBy: Prisma.BlogOrderByWithRelationInput = {
       createdAt: userOptionDto.order === Order.ASC ? 'asc' : 'desc',
@@ -168,16 +221,26 @@ export class UserService {
       }),
       this.prismaService.user.count({ where }),
     ]);
-    const userData = users.map((user) => UserResponseDto.fromEntity(user));
-
     if (totalCount === 0) {
       return 'Can not export any user data as no user matches the criteria.';
     }
+    const userDataForCsv = users.map((user, idx) => ({
+      No: idx + 1,
+      'First Name': user.firstName,
+      'Last Name': user.lastName,
+      Email: user.email,
+      'Registered At': user.createdAt
+        ? new Date(user.createdAt).toLocaleString('vi-VN')
+        : '',
+      Password: '',
+      Role: user.role,
+    }));
 
-    const csv = Papa.unparse(userData, {
+    const csv = Papa.unparse(userDataForCsv, {
       header: true,
       delimiter: ';',
     });
+
     return csv;
   }
   async findAll(): Promise<UserResponseDto[]> {
