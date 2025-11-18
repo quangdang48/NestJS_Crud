@@ -118,7 +118,7 @@ model CreditSystem {
 model CreditTracking {
   id               String             @id @default(ulid())
   name             String
-  creditSystemType CreditTrackingType
+  creditSystemType CreditSystemType
   userId           String
   amount           Decimal
   type             CreditTrackingType
