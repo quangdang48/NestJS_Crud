@@ -1,10 +1,9 @@
 import { Module } from '@nestjs/common';
-import { AuthModule } from './auth/auth.module';
+import { AuthModule } from '@/modules/auth/auth.module';
 import { ConfigModule } from '@nestjs/config';
 import { PrismaModule } from './prisma/prisma.module';
-import { BlogModule } from './blog/blog.module';
-import { NationalModule } from './national/national.module';
-import { UserModule } from './user/user.module';
+import { BlogModule } from '@/modules/blog/blog.module';
+import { UserModule } from '@/modules/user/user.module';
 
 @Module({
   imports: [
@@ -15,7 +14,6 @@ import { UserModule } from './user/user.module';
     }),
     PrismaModule,
     BlogModule,
-    NationalModule,
     UserModule,
   ],
 })

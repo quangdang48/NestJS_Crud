@@ -7,52 +7,52 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-enum UserRole {
-  ADMIN
-  CUSTOMER
-}
-
-enum BillingCycle {
+enum BILLING_CYCLE {
+  WEEKLY
   MONTHLY
   YEARLY
 }
 
-enum PlanType {
+enum PLAN_TYPE {
   FREE
   PRO
   ENTERPRISE
 }
 
-enum CreditTrackingType {
+enum CREDIT_TRACKING_TYPE {
   INCREASE
   DECREASE
 }
 
-enum SubscriptionStatus {
+enum SUBSCRIPTION_STATUS {
   ACTIVE
   CANCELLED
   EXPIRED
 }
 
-enum CreditSystemType {
+enum CREDIT_SYSTEM_TYPE {
   AI_CHAT
   IMAGE_GEN
 }
 
-model User {
-  id        String   @id @default(ulid())
-  email     String
-  password  String
-  salt      String
-  firstName String
-  lastName  String
-  role      UserRole @default(CUSTOMER)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  deletedAt DateTime?
-  isActive  Boolean  @default(true)
+enum USER_ROLE {
+  CUSTOMER
+  ADMIN
 }
 
+model User {
+  id                 String         @id @default(ulid())
+  stripeCustomerId   String?
+  firstName          String
+  lastName           String
+  password           String
+  email              String         
+  salt               String
+  role               USER_ROLE
+  createdAt          DateTime       @default(now())
+  updatedAt          DateTime       @updatedAt
+  deletedAt          DateTime?
+}
 model Blog {
   id        String   @id @default(ulid())
   title     String
@@ -61,79 +61,72 @@ model Blog {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   deletedAt DateTime?
-  isActive  Boolean  @default(true)
-}
-
-model AuthSession {
-  id          String   @id @default(ulid())
-  userId      String
-  roleAtLogin UserRole
-  expiresAt   DateTime
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  deletedAt   DateTime?
-  isActive    Boolean  @default(true)
 }
 
 model Plan {
-  id          String       @id @default(ulid())
-  name        String
-  price       Decimal
-  durationDay Int
-  productId   String
-  priceId     String
-  isDisplay   Boolean
-  isActive    Boolean
-  isTrial     Boolean
-  billingCycle BillingCycle
-  planType    PlanType
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
-  deletedAt   DateTime?
+  id                 String         @id @default(ulid())
+  name               String
+  description        String?
+  price              Float
+  durationDays       Int
+  stripeProductId    String
+  stripePriceId      String
+  isDisplay          Boolean
+  isActive           Boolean
+  isTrial            Boolean
+  trialDays          Int?
+  creditLimits       Json
+  billingCycle       BILLING_CYCLE
+  planType           PLAN_TYPE
+  createdAt          DateTime       @default(now())
+  updatedAt          DateTime       @updatedAt
+  deletedAt          DateTime?
 }
 
 model Subscription {
-  id        String            @id @default(ulid())
-  userId    String
-  planId    String
-  startDate DateTime
-  endDate   DateTime
-  status    SubscriptionStatus
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  deletedAt DateTime?
+  id                   String         @id @default(ulid())
+  userId               String
+  planId               String
+  stripeSubscriptionId String
+  startDate            DateTime
+  endDate              DateTime
+  status               SUBSCRIPTION_STATUS
+  createdAt            DateTime       @default(now())
+  updatedAt            DateTime       @updatedAt
+  deletedAt            DateTime?
 }
 
 model CreditSystem {
-  id        String   @id @default(ulid())
-  name      String
-  type      CreditSystemType
-  description String
-  amount    Decimal
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  deletedAt DateTime?
+  id           String            @id @default(ulid())
+  name         String
+  type         CREDIT_SYSTEM_TYPE
+  description  String?
+  defaultCredit Int
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+  deletedAt    DateTime?
 }
 
 model CreditTracking {
-  id               String             @id @default(ulid())
-  name             String
-  creditSystemType CreditSystemType
+  id               String           @id @default(ulid())
   userId           String
-  amount           Decimal
-  type             CreditTrackingType
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
+  creditSystemType CREDIT_SYSTEM_TYPE
+  amount           Float
+  type             CREDIT_TRACKING_TYPE
+  referenceId      String?
+  description      String?
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
   deletedAt        DateTime?
 }
 
 model WebhookLog {
-  id         String   @id @default(ulid())
-  event      String
-  payload    Json
-  status     String
-  receivedAt DateTime
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
-  deletedAt  DateTime?
+  id          String   @id @default(ulid())
+  event       String
+  payload     Json
+  status      String
+  receivedAt  DateTime
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  deletedAt   DateTime?
 }

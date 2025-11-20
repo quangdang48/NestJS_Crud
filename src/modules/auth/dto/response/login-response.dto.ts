@@ -1,5 +1,5 @@
 import { UserRole } from '@prisma/client';
-import { SessionUser } from 'src/auth/interface/session-user.interface';
+import { SessionUser } from '@/modules/auth/interface/session-user.interface';
 
 export class LoginResponseDto {
   constructor(sessionId: string, role: UserRole) {

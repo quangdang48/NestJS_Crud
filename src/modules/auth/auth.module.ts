@@ -1,7 +1,7 @@
 import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { Global, Module } from '@nestjs/common';
-import { UserModule } from 'src/user/user.module';
+import { UserModule } from '@/modules/user/user.module';
 
 @Global()
 @Module({
