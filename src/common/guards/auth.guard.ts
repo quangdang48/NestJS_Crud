@@ -26,7 +26,6 @@ export class AuthGuard implements CanActivate {
       throw new UnauthorizedException('Session does not exist');
     }
 
-    // Assign session to req.user
     req.user = session;
     return true;
   }

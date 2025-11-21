@@ -4,7 +4,7 @@ import * as Papa from 'papaparse';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { UserResponseDto } from './dto/response/user-response.dto';
 import * as bcrypt from 'bcryptjs';
-import { Prisma, UserRole } from '@prisma/client';
+import { Prisma, USER_ROLE } from '@prisma/client';
 import {
   ErrorCodeImportUser,
   ErrorMessageMap,
@@ -15,10 +15,14 @@ import {
 import { UserOptionDto } from './dto/request/user-option';
 import { Order } from 'src/common/dto';
 import { ImportUserDto } from './dto/request/import-user.dto';
+import { StripeService } from '../stripe/stripe.service';
 
 @Injectable()
 export class UserService {
-  constructor(private readonly prismaService: PrismaService) {}
+  constructor(
+    private readonly prismaService: PrismaService,
+    private readonly stripeService: StripeService,
+  ) {}
   async importUserInformation(
     file: Express.Multer.File,
   ): Promise<ImportUserResponseDto> {
@@ -82,7 +86,7 @@ export class UserService {
               lastName: mappedData.lastName,
               password: result.hashedPassword,
               salt: result.salt,
-              role: UserRole.CUSTOMER,
+              role: USER_ROLE.CUSTOMER,
             },
           });
 
@@ -183,7 +187,7 @@ export class UserService {
   ): Promise<string> {
     const where = {
       isActive: true,
-      role: UserRole.CUSTOMER,
+      role: USER_ROLE.CUSTOMER,
       ...(userOptionDto.firstName
         ? {
             firstName: {
@@ -245,7 +249,7 @@ export class UserService {
   }
   async findAll(): Promise<UserResponseDto[]> {
     const users = await this.prismaService.user.findMany({
-      where: { isActive: true, role: UserRole.CUSTOMER },
+      where: { isActive: true, role: USER_ROLE.CUSTOMER },
     });
     return users.map((user) => UserResponseDto.fromEntity(user));
   }
@@ -258,12 +262,20 @@ export class UserService {
     }
     const salt = bcrypt.genSaltSync(10);
     const hashedPassword = bcrypt.hashSync(createUserDto.password, salt);
+
+    // Add stripe
+    const customerStripe = this.stripeService.createCustomer({
+      email: createUserDto.email,
+      name: createUserDto.firstName + ' ' + createUserDto.lastName,
+    });
+
     const user = await this.prismaService.user.create({
       data: {
         email: createUserDto.email,
         firstName: createUserDto.firstName,
         lastName: createUserDto.lastName,
         password: hashedPassword,
+        stripeCustomerId: (await customerStripe).id,
         salt: salt,
       },
     });

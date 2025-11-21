@@ -1,8 +1,8 @@
-import { UserRole } from '@prisma/client';
+import { USER_ROLE } from '@prisma/client';
 
 export interface SessionUser {
   userId?: string;
   sessionId?: string;
   email?: string;
-  role?: UserRole;
+  role?: USER_ROLE;
 }

@@ -5,7 +5,7 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '@/prisma/prisma.service';
 import * as bcrypt from 'bcryptjs';
-import { UserRole } from '@prisma/client';
+import { USER_ROLE } from '@prisma/client';
 import { RegisterRequestDto } from './dto/request/register-request.dto';
 import { RegisterResponseDto } from './dto/response/register-response.dto';
 import { LoginRequestDto } from './dto/request/login-request.dto';
@@ -14,12 +14,14 @@ import { SessionUser } from './interface/session-user.interface';
 import { CreateUserDto } from '@/modules/user/dto/request/create-user.dto';
 import { UserService } from '@/modules/user/user.service';
 import { UserResponseDto } from '@/modules/user/dto/response/user-response.dto';
+import { StripeService } from '../stripe/stripe.service';
 
 @Injectable()
 export class AuthService {
   constructor(
     private readonly prismaService: PrismaService,
     private readonly userService: UserService,
+    private readonly stripeService: StripeService,
   ) {}
 
   async signup(registerDto: RegisterRequestDto): Promise<RegisterResponseDto> {
@@ -52,7 +54,7 @@ export class AuthService {
   }
   async createSession(
     userId: string,
-    role: UserRole,
+    role: USER_ROLE,
   ): Promise<LoginResponseDto> {
     // Create session
     const sessionDurationHours = 24; // 24 hours

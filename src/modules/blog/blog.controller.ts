@@ -15,7 +15,7 @@ import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Roles } from '@/common/decorators/roles.decorator';
 import { AuthGuard } from '@/common/guards/auth.guard';
 import { RolesGuard } from '@/common/guards/role.guard';
-import { UserRole } from '@prisma/client';
+import { USER_ROLE } from '@prisma/client';
 
 import { BlogService } from './blog.service';
 import { CreateBlogRequestDto } from './dto/request/create-blog.dto';
@@ -33,7 +33,7 @@ export class BlogController {
    * Get blogs of logged-in user (supports pagination & search)
    */
   @Get('user')
-  @Roles([UserRole.CUSTOMER])
+  @Roles([USER_ROLE.CUSTOMER])
   @ApiOperation({
     summary: 'Get blogs of current user with pagination & search',
   })
@@ -53,7 +53,7 @@ export class BlogController {
    * Get blog by ID
    */
   @Get(':blogId')
-  @Roles([UserRole.CUSTOMER])
+  @Roles([USER_ROLE.CUSTOMER])
   @ApiOperation({ summary: 'Get blog by ID' })
   @ApiResponse({
     status: 200,
@@ -71,7 +71,7 @@ export class BlogController {
    * Create new blog
    */
   @Post()
-  @Roles([UserRole.ADMIN, UserRole.CUSTOMER])
+  @Roles([USER_ROLE.ADMIN, USER_ROLE.CUSTOMER])
   @ApiOperation({ summary: 'Create a new blog' })
   @ApiResponse({
     status: 200,
@@ -90,7 +90,7 @@ export class BlogController {
    * Delete a blog by ID
    */
   @Delete(':blogId')
-  @Roles([UserRole.CUSTOMER])
+  @Roles([USER_ROLE.CUSTOMER])
   @ApiOperation({ summary: 'Delete a blog by ID' })
   @ApiResponse({
     status: 200,
@@ -109,7 +109,7 @@ export class BlogController {
    * Get blogs by Author ID
    */
   @Get('author/:authorId')
-  @Roles([UserRole.ADMIN])
+  @Roles([USER_ROLE.ADMIN])
   @ApiOperation({ summary: 'Get blogs by author ID' })
   @ApiResponse({
     status: 200,

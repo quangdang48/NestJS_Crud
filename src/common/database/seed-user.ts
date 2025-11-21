@@ -1,10 +1,6 @@
 import * as bcrypt from 'bcryptjs';
 import { PrismaService } from '../../prisma/prisma.service';
-
-enum UserRole {
-  ADMIN = 'ADMIN',
-  CUSTOMER = 'CUSTOMER',
-}
+import { USER_ROLE } from '@prisma/client';
 export class SeedUser {
   public static async seedUserData(
     prismaService: PrismaService,
@@ -16,7 +12,7 @@ export class SeedUser {
       email: `user${index + 1}@gmail.com`,
       firstName: `User${index + 1}`,
       lastName: `Test${index + 1}`,
-      role: UserRole.CUSTOMER,
+      role: USER_ROLE.CUSTOMER,
       password: hashedPassword,
       salt: salt,
     }));
@@ -26,7 +22,7 @@ export class SeedUser {
           email: 'admin@gmail.com',
           firstName: 'admin',
           lastName: 'admin',
-          role: UserRole.ADMIN,
+          role: USER_ROLE.ADMIN,
           password: hashedPassword,
           salt: salt,
         },

@@ -4,10 +4,8 @@ import {
   IsNotEmpty,
   IsString,
   MaxLength,
-  Min,
   MinLength,
 } from 'class-validator';
-import { ImportUserDto } from './import-user.dto';
 
 export class CreateUserDto {
   @ApiProperty({

@@ -48,16 +48,29 @@ model User {
   password           String
   email              String         
   salt               String
-  role               USER_ROLE
+  role               USER_ROLE      @default(CUSTOMER)
+  isActive           Boolean        @default(true)
   createdAt          DateTime       @default(now())
   updatedAt          DateTime       @updatedAt
   deletedAt          DateTime?
+}
+
+model AuthSession {
+  id          String   @id @default(uuid())
+  userId      String
+  roleAtLogin USER_ROLE
+  expiresAt   DateTime
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  deletedAt   DateTime?
 }
 model Blog {
   id        String   @id @default(ulid())
   title     String
   content   String
   authorId  String
+  isActive           Boolean @default(true)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   deletedAt DateTime?
@@ -72,12 +85,12 @@ model Plan {
   stripeProductId    String
   stripePriceId      String
   isDisplay          Boolean
-  isActive           Boolean
   isTrial            Boolean
   trialDays          Int?
   creditLimits       Json
   billingCycle       BILLING_CYCLE
   planType           PLAN_TYPE
+  isActive           Boolean        @default(true)
   createdAt          DateTime       @default(now())
   updatedAt          DateTime       @updatedAt
   deletedAt          DateTime?
@@ -102,6 +115,7 @@ model CreditSystem {
   type         CREDIT_SYSTEM_TYPE
   description  String?
   defaultCredit Int
+  isActive           Boolean        @default(true)
   createdAt    DateTime          @default(now())
   updatedAt    DateTime          @updatedAt
   deletedAt    DateTime?
@@ -115,6 +129,7 @@ model CreditTracking {
   type             CREDIT_TRACKING_TYPE
   referenceId      String?
   description      String?
+  isActive           Boolean        @default(true)
   createdAt        DateTime         @default(now())
   updatedAt        DateTime         @updatedAt
   deletedAt        DateTime?
@@ -126,6 +141,7 @@ model WebhookLog {
   payload     Json
   status      String
   receivedAt  DateTime
+  isActive           Boolean        @default(true)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   deletedAt   DateTime?

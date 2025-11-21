@@ -26,25 +26,25 @@ export class RegisterRequestDto {
 
   @ApiProperty({
     description: 'First name of user',
-    minLength: 8,
-    maxLength: 50,
+    minLength: 2,
+    maxLength: 30,
     default: 'firstName',
   })
   @IsNotEmpty()
   @IsString()
-  @MinLength(8)
-  @MaxLength(50)
+  @MinLength(2)
+  @MaxLength(30)
   firstName: string;
 
   @ApiProperty({
     description: 'Last name of user',
-    minLength: 8,
-    maxLength: 50,
+    minLength: 2,
+    maxLength: 30,
     default: 'lastName',
   })
   @IsNotEmpty()
   @IsString()
-  @MinLength(8)
-  @MaxLength(50)
+  @MinLength(2)
+  @MaxLength(30)
   lastName: string;
 }

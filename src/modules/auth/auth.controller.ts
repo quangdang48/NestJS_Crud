@@ -5,7 +5,6 @@ import { LoginRequestDto } from './dto/request/login-request.dto';
 import { RegisterRequestDto } from './dto/request/register-request.dto';
 import { RegisterResponseDto } from './dto/response/register-response.dto';
 import { Request } from 'express';
-
 @Controller('auth')
 export class AuthController {
   constructor(private authService: AuthService) {}

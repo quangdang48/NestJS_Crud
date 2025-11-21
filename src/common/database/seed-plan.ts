@@ -14,7 +14,6 @@ export class SeedPlan {
           stripeProductId: 'prod_TSHpVJ4N3yJHkT',
           stripePriceId: 'price_1SVNFO2caDcXa36zUZCgVdSV',
           isDisplay: true,
-          isActive: true,
           isTrial: true,
           trialDays: 7,
           creditLimits: {
@@ -33,7 +32,6 @@ export class SeedPlan {
           stripeProductId: 'prod_TSHpiG3S06BSW0',
           stripePriceId: 'price_1SVNFm2caDcXa36zvFkeJDgQ',
           isDisplay: true,
-          isActive: true,
           isTrial: false,
           creditLimits: {
             AI_CHAT: 1000,
@@ -51,7 +49,6 @@ export class SeedPlan {
           stripeProductId: 'prod_TSHpYtNqm1bADq',
           stripePriceId: 'price_1SVNGG2caDcXa36zjDolrCp7',
           isDisplay: true,
-          isActive: true,
           isTrial: false,
           trialDays: null,
           creditLimits: {
