@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import PlanResponseDto from './dto/response/plan-response.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { Plan } from '@prisma/client';
@@ -14,5 +14,14 @@ export class PlanService {
       },
     });
     return plans.map((plan) => PlanResponseDto.fromEntity(plan));
+  }
+  async getPlanById(planId: string): Promise<PlanResponseDto> {
+    const plan = await this.prismaService.plan.findFirst({
+      where: {
+        id: planId,
+      },
+    });
+    if (!plan) throw new NotFoundException('Plan not found');
+    return PlanResponseDto.fromEntity(plan);
   }
 }

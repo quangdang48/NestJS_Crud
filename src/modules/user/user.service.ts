@@ -264,7 +264,7 @@ export class UserService {
     const hashedPassword = bcrypt.hashSync(createUserDto.password, salt);
 
     // Add stripe
-    const customerStripe = this.stripeService.createCustomer({
+    const customerStripe = await this.stripeService.createCustomer({
       email: createUserDto.email,
       name: createUserDto.firstName + ' ' + createUserDto.lastName,
     });
@@ -275,7 +275,7 @@ export class UserService {
         firstName: createUserDto.firstName,
         lastName: createUserDto.lastName,
         password: hashedPassword,
-        stripeCustomerId: (await customerStripe).id,
+        stripeCustomerId: customerStripe.id,
         salt: salt,
       },
     });
