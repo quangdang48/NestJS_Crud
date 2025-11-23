@@ -1,9 +1,4 @@
-import {
-  BILLING_CYCLE,
-  CREDIT_SYSTEM_TYPE,
-  Plan,
-  PLAN_TYPE,
-} from '@prisma/client';
+import { BILLING_CYCLE, Plan, PLAN_TYPE } from '@prisma/client';
 
 export default class PlanResponseDto {
   id: string;
@@ -12,7 +7,7 @@ export default class PlanResponseDto {
   durationDay: number;
   billingCycle: BILLING_CYCLE;
   type: PLAN_TYPE;
-  creditLimit: Record<CREDIT_SYSTEM_TYPE, number>;
+  creditLimit: number;
   price: number;
   isTrial: boolean;
   static fromEntity(entity: Plan): PlanResponseDto {
@@ -23,7 +18,7 @@ export default class PlanResponseDto {
     dto.description = entity.description;
     dto.durationDay = entity.durationDays;
     dto.billingCycle = entity.billingCycle;
-    dto.creditLimit = entity.creditLimits as Record<string, number>;
+    dto.creditLimit = entity.creditLimits;
     dto.price = entity.price;
     dto.isTrial = entity.isTrial;
     return dto;

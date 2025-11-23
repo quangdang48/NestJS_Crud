@@ -1,9 +1,9 @@
-import { AuthSession } from '@prisma/client';
+import { SessionUser } from 'src/modules/auth/interface/session-user.interface';
 
 declare global {
   namespace Express {
     interface Request {
-      user?: AuthSession | any;
+      user?: SessionUser;
     }
   }
 }

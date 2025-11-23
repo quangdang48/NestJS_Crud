@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import Stripe from 'stripe';
 import { CheckoutLinkResponse } from '../checkout/dto/response/checkout-link-response.dto';
 
@@ -31,6 +31,44 @@ export class StripeService {
     return {
       url: paymentLink.url,
       id: paymentLink.id,
+    };
+  }
+  async getCurrentSubOfCustomer(data: { customerId: string }) {
+    const subscriptions = await this.stripe.subscriptions.list({
+      customer: data.customerId,
+      status: 'active',
+    });
+    if (subscriptions.data.length == 0)
+      throw new NotFoundException('Not found subscription of this users');
+    return subscriptions;
+  }
+  async createCheckoutSession(data: {
+    priceId: string;
+    quantity: number;
+    customerId: string;
+  }): Promise<CheckoutLinkResponse> {
+    const session = await this.stripe.checkout.sessions.create({
+      mode: 'subscription',
+      line_items: [
+        {
+          price: data.priceId,
+          quantity: data.quantity,
+        },
+      ],
+
+      customer: data.customerId,
+
+      success_url:
+        process.env.CHECKOUT_SUCCESS_URL ||
+        'http://localhost:3333/checkout/success',
+      cancel_url:
+        process.env.CHECKOUT_CANCEL_URL ||
+        'http://localhost:3333/checkout/cancel',
+    });
+
+    return {
+      id: session.id,
+      url: session.url,
     };
   }
 }
