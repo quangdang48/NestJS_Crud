@@ -31,8 +31,8 @@ enum SUBSCRIPTION_STATUS {
 }
 
 enum CREDIT_SYSTEM_TYPE {
-  AI_CHAT
-  IMAGE_GEN
+  AI_BLOG_GEN
+  BLOG_SUMMARY
 }
 
 enum USER_ROLE {
@@ -87,7 +87,7 @@ model Plan {
   isDisplay          Boolean
   isTrial            Boolean
   trialDays          Int?
-  creditLimits       Json
+  creditLimits       Int
   billingCycle       BILLING_CYCLE
   planType           PLAN_TYPE
   isActive           Boolean        @default(true)
