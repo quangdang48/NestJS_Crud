@@ -1,7 +1,12 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { StripeService } from '../stripe/stripe.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CheckoutLinkResponse } from './dto/response/checkout-link-response.dto';
+import { SUBSCRIPTION_STATUS } from '@prisma/client';
 
 @Injectable()
 export class PaymentService {
@@ -25,6 +30,18 @@ export class PaymentService {
     planId: string,
     customerId: string,
   ): Promise<CheckoutLinkResponse> {
+    const currentSubscription = await this.prismaService.subscription.findFirst(
+      {
+        where: {
+          userId: customerId,
+          status: SUBSCRIPTION_STATUS.ACTIVE,
+        },
+      },
+    );
+    if (currentSubscription)
+      throw new BadRequestException(
+        'This customer already has an active subscription.',
+      );
     const plan = await this.prismaService.plan.findFirst({
       where: { id: planId },
     });
