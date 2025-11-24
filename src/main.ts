@@ -1,11 +1,13 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import * as process from 'node:process';
+import * as bodyParser from 'body-parser';
 import { ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  app.use('/webhook/stripe', bodyParser.raw({ type: 'application/json' }));
 
   app.useGlobalPipes(
     new ValidationPipe({
@@ -32,7 +34,6 @@ async function bootstrap() {
     },
     jsonDocumentUrl: 'api/docs-json',
   });
-  // App listen
   await app.listen(process.env.PORT ?? 3000);
 }
 bootstrap();

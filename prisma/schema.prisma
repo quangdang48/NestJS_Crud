@@ -39,7 +39,10 @@ enum USER_ROLE {
   CUSTOMER
   ADMIN
 }
-
+enum WEBHOOK_STATUS {
+  FAILED
+  RECEIVED
+}
 model User {
   id                 String         @id @default(ulid())
   stripeCustomerId   String?
@@ -56,7 +59,7 @@ model User {
 }
 
 model AuthSession {
-  id          String   @id @default(uuid())
+  id          String   @id @default(ulid())
   userId      String
   roleAtLogin USER_ROLE
   expiresAt   DateTime
@@ -102,7 +105,6 @@ model Subscription {
   planId               String
   stripeSubscriptionId String
   startDate            DateTime
-  endDate              DateTime
   status               SUBSCRIPTION_STATUS
   createdAt            DateTime       @default(now())
   updatedAt            DateTime       @updatedAt
@@ -139,7 +141,7 @@ model WebhookLog {
   id          String   @id @default(ulid())
   event       String
   payload     Json
-  status      String
+  status      WEBHOOK_STATUS
   receivedAt  DateTime
   isActive           Boolean        @default(true)
   createdAt   DateTime @default(now())

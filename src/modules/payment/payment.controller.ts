@@ -1,12 +1,12 @@
 import { Controller, Get, Param, Query, Req, UseGuards } from '@nestjs/common';
-import { CheckoutService } from './checkout.service';
+import { PaymentService } from './payment.service';
 import { CheckoutLinkResponse } from './dto/response/checkout-link-response.dto';
 import { Request } from 'express';
 import { AuthGuard } from 'src/common/guards/auth.guard';
 
-@Controller('checkout')
-export class CheckoutController {
-  constructor(private readonly checkoutService: CheckoutService) {}
+@Controller('payment')
+export class PaymentController {
+  constructor(private readonly checkoutService: PaymentService) {}
   @Get('checkout-session/:planId')
   @UseGuards(AuthGuard)
   async createCheckoutSession(

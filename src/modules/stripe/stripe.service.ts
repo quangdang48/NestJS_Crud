@@ -1,6 +1,10 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import Stripe from 'stripe';
-import { CheckoutLinkResponse } from '../checkout/dto/response/checkout-link-response.dto';
+import { CheckoutLinkResponse } from '@/modules/payment/dto/response/checkout-link-response.dto';
 
 @Injectable()
 export class StripeService {
@@ -46,6 +50,7 @@ export class StripeService {
     priceId: string;
     quantity: number;
     customerId: string;
+    metadata?: Record<string, any>;
   }): Promise<CheckoutLinkResponse> {
     const session = await this.stripe.checkout.sessions.create({
       mode: 'subscription',
@@ -55,9 +60,8 @@ export class StripeService {
           quantity: data.quantity,
         },
       ],
-
       customer: data.customerId,
-
+      metadata: data.metadata,
       success_url:
         process.env.CHECKOUT_SUCCESS_URL ||
         'http://localhost:3333/checkout/success',
@@ -70,5 +74,19 @@ export class StripeService {
       id: session.id,
       url: session.url,
     };
+  }
+  constructWebhookEvent(rawBody: Buffer, signature: string): Stripe.Event {
+    try {
+      const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
+      const event = this.stripe.webhooks.constructEvent(
+        rawBody,
+        signature,
+        endpointSecret,
+      );
+      return event;
+    } catch (err) {
+      console.error('Webhook signature verification failed.', err.message);
+      throw new BadRequestException('Invalid Stripe webhook signature');
+    }
   }
 }

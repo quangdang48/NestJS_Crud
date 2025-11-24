@@ -3,6 +3,7 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { StripeService } from '../stripe/stripe.service';
 import { USER_ROLE } from '@prisma/client';
 import { CurrentSubscriptionResponse } from './dto/response/subscription-response.dto';
+import { SubscriptionRequestDto } from './dto/request/subscription-request.dto';
 
 @Injectable()
 export class SubscriptionService {
@@ -40,5 +41,21 @@ export class SubscriptionService {
     });
     console.log(subscriptions);
     return CurrentSubscriptionResponse.fromEntity(subscriptions);
+  }
+  async createFromWebhook(dto: SubscriptionRequestDto) {
+    const exists = await this.prismaService.subscription.findFirst({
+      where: { stripeSubscriptionId: dto.stripeSubscriptionId },
+    });
+    if (exists) return exists;
+
+    return this.prismaService.subscription.create({
+      data: {
+        planId: dto.planId,
+        userId: dto.userId,
+        startDate: dto.startDate,
+        status: dto.status,
+        stripeSubscriptionId: dto.stripeSubscriptionId,
+      },
+    });
   }
 }

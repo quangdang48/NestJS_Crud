@@ -2,10 +2,9 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { StripeService } from '../stripe/stripe.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CheckoutLinkResponse } from './dto/response/checkout-link-response.dto';
-import { emit } from 'process';
 
 @Injectable()
-export class CheckoutService {
+export class PaymentService {
   constructor(
     private readonly stripeService: StripeService,
     private readonly prismaService: PrismaService,
@@ -50,6 +49,10 @@ export class CheckoutService {
       priceId: plan.stripePriceId,
       quantity: 1,
       customerId: user.stripeCustomerId,
+      metadata: {
+        customerId: customerId,
+        planId: planId,
+      },
     });
   }
 }
