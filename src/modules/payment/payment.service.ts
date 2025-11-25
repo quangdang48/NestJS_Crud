@@ -28,12 +28,30 @@ export class PaymentService {
   }
   async createCheckoutSession(
     planId: string,
-    customerId: string,
+    userId: string,
   ): Promise<CheckoutLinkResponse> {
+    const user = await this.prismaService.user.findFirst({
+      where: {
+        id: userId,
+        isActive: true,
+      },
+    });
+    if (!user) throw new NotFoundException('User not found');
+    if (!user.stripeCustomerId) {
+      const savedStripeUser = await this.stripeService.createCustomer({
+        email: user.email,
+        name: user.firstName + ' ' + user.lastName,
+      });
+      user.stripeCustomerId = savedStripeUser.id;
+      await this.prismaService.user.update({
+        where: { id: user.id },
+        data: { stripeCustomerId: savedStripeUser.id },
+      });
+    }
     const currentSubscription = await this.prismaService.subscription.findFirst(
       {
         where: {
-          userId: customerId,
+          userId: user.id,
           status: SUBSCRIPTION_STATUS.ACTIVE,
         },
       },
@@ -46,30 +64,10 @@ export class PaymentService {
       where: { id: planId },
     });
     if (!plan) throw new NotFoundException('Plan not found');
-    const user = await this.prismaService.user.findFirst({
-      where: {
-        id: customerId,
-      },
-    });
-    if (!user.stripeCustomerId) {
-      const savedStripeUser = await this.stripeService.createCustomer({
-        email: user.email,
-        name: user.firstName + ' ' + user.lastName,
-      });
-      user.stripeCustomerId = savedStripeUser.id;
-      await this.prismaService.user.update({
-        where: { id: user.id },
-        data: { stripeCustomerId: savedStripeUser.id },
-      });
-    }
     return await this.stripeService.createCheckoutSession({
       priceId: plan.stripePriceId,
       quantity: 1,
       customerId: user.stripeCustomerId,
-      metadata: {
-        customerId: customerId,
-        planId: planId,
-      },
     });
   }
 }

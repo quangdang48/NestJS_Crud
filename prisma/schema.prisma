@@ -102,9 +102,9 @@ model Plan {
 model Subscription {
   id                   String         @id @default(ulid())
   userId               String
-  planId               String
+  stripeProductId      String
+  stripePriceId        String
   stripeSubscriptionId String
-  startDate            DateTime
   status               SUBSCRIPTION_STATUS
   createdAt            DateTime       @default(now())
   updatedAt            DateTime       @updatedAt
@@ -126,11 +126,12 @@ model CreditSystem {
 model CreditTracking {
   id               String           @id @default(ulid())
   userId           String
-  creditSystemType CREDIT_SYSTEM_TYPE
+  currency         String
+  creditSystemType CREDIT_SYSTEM_TYPE?
   amount           Float
+  currentCredit    Float
   type             CREDIT_TRACKING_TYPE
-  referenceId      String?
-  description      String?
+  subscriptionId      String?
   isActive           Boolean        @default(true)
   createdAt        DateTime         @default(now())
   updatedAt        DateTime         @updatedAt

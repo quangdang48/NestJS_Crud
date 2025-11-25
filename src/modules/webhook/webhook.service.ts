@@ -3,15 +3,14 @@ import { WEBHOOK_STATUS } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
 import Stripe from 'stripe';
 import { StripeService } from '../stripe/stripe.service';
-import { SubscriptionRequestDto } from '../subscription/dto/request/subscription-request.dto';
-import { SubscriptionService } from '../subscription/subscription.service';
+import { WebhookHandler } from './webhook-handler.service';
 
 @Injectable()
 export class WebhookService {
   constructor(
     private readonly prismaService: PrismaService,
     private readonly stripeService: StripeService,
-    private readonly subscriptionService: SubscriptionService,
+    private readonly webhookHandler: WebhookHandler,
   ) {}
 
   async constructWebhookEvent(body: Buffer, signature: string) {
@@ -41,11 +40,7 @@ export class WebhookService {
         receivedAt: new Date(),
       },
     });
-
-    if (event.type === 'checkout.session.completed') {
-      const dto = SubscriptionRequestDto.fromStripeWebhook(event);
-      await this.subscriptionService.createFromWebhook(dto);
-    }
+    await this.webhookHandler.handle(event);
     return event;
   }
 }

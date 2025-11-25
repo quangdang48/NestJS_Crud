@@ -1,8 +1,4 @@
-import {
-  BadRequestException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import Stripe from 'stripe';
 import { CheckoutLinkResponse } from '@/modules/payment/dto/response/checkout-link-response.dto';
 
@@ -37,37 +33,26 @@ export class StripeService {
       id: paymentLink.id,
     };
   }
-  async getCurrentSubOfCustomer(data: { customerId: string }) {
-    const subscriptions = await this.stripe.subscriptions.list({
-      customer: data.customerId,
-      status: 'active',
-    });
-    if (subscriptions.data.length == 0)
-      throw new NotFoundException('Not found subscription of this users');
-    return subscriptions;
-  }
   async createCheckoutSession(data: {
     priceId: string;
     quantity: number;
     customerId: string;
-    metadata?: Record<string, any>;
   }): Promise<CheckoutLinkResponse> {
     const session = await this.stripe.checkout.sessions.create({
       mode: 'subscription',
+      customer: data.customerId,
       line_items: [
         {
           price: data.priceId,
           quantity: data.quantity,
         },
       ],
-      customer: data.customerId,
-      metadata: data.metadata,
       success_url:
         process.env.CHECKOUT_SUCCESS_URL ||
-        'http://localhost:3333/checkout/success',
+        'http://localhost:3333/payment/success',
       cancel_url:
         process.env.CHECKOUT_CANCEL_URL ||
-        'http://localhost:3333/checkout/cancel',
+        'http://localhost:3333/payment/cancel',
     });
 
     return {
@@ -88,5 +73,8 @@ export class StripeService {
       console.error('Webhook signature verification failed.', err.message);
       throw new BadRequestException('Invalid Stripe webhook signature');
     }
+  }
+  async retrieveSubscription(subscriptionId: string) {
+    return await this.stripe.subscriptions.retrieve(subscriptionId);
   }
 }
