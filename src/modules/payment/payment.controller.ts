@@ -7,6 +7,7 @@ import { AuthGuard } from 'src/common/guards/auth.guard';
 @Controller('payment')
 export class PaymentController {
   constructor(private readonly checkoutService: PaymentService) {}
+
   @Get('checkout-session/:planId')
   @UseGuards(AuthGuard)
   async createCheckoutSession(
@@ -16,13 +17,17 @@ export class PaymentController {
     const userId = req.user.userId;
     return this.checkoutService.createCheckoutSession(planId, userId);
   }
+
   @Get('success')
   success(@Query('session_id') sessionId: string) {
-    return `Payment success! Session ID: ${sessionId}`;
+    if (!sessionId) {
+      return { message: 'Payment success!', sessionId: null };
+    }
+    return { message: 'Payment success!', sessionId };
   }
 
   @Get('cancel')
   cancel() {
-    return 'Payment cancelled!';
+    return { message: 'Payment cancelled!' };
   }
 }

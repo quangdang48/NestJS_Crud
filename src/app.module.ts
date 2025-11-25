@@ -9,6 +9,7 @@ import { BlogModule } from '@/modules/blog/blog.module';
 import { SubscriptionModule } from './modules/subscription/subscription.module';
 import { PaymentModule } from '@/modules/payment/payment.module';
 import { WebhookModule } from '@/modules/webhook/webhook.module';
+import { PortalModule } from './modules/portal/portal.module';
 
 @Module({
   imports: [
@@ -25,6 +26,7 @@ import { WebhookModule } from '@/modules/webhook/webhook.module';
     PaymentModule,
     SubscriptionModule,
     WebhookModule,
+    PortalModule,
   ],
 })
 export class AppModule {}

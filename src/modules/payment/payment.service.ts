@@ -14,6 +14,7 @@ export class PaymentService {
     private readonly stripeService: StripeService,
     private readonly prismaService: PrismaService,
   ) {}
+
   async getPaymentLink(planId: string): Promise<CheckoutLinkResponse> {
     const plan = await this.prismaService.plan.findFirst({
       where: {
@@ -26,6 +27,7 @@ export class PaymentService {
       quantity: 1,
     });
   }
+
   async createCheckoutSession(
     planId: string,
     userId: string,
@@ -37,6 +39,7 @@ export class PaymentService {
       },
     });
     if (!user) throw new NotFoundException('User not found');
+
     if (!user.stripeCustomerId) {
       const savedStripeUser = await this.stripeService.createCustomer({
         email: user.email,
@@ -48,6 +51,7 @@ export class PaymentService {
         data: { stripeCustomerId: savedStripeUser.id },
       });
     }
+
     const currentSubscription = await this.prismaService.subscription.findFirst(
       {
         where: {
@@ -60,10 +64,12 @@ export class PaymentService {
       throw new BadRequestException(
         'This customer already has an active subscription.',
       );
+
     const plan = await this.prismaService.plan.findFirst({
       where: { id: planId },
     });
     if (!plan) throw new NotFoundException('Plan not found');
+
     return await this.stripeService.createCheckoutSession({
       priceId: plan.stripePriceId,
       quantity: 1,

@@ -5,6 +5,7 @@ import { StripeModule } from '../stripe/stripe.module';
 import { SubscriptionModule } from '../subscription/subscription.module';
 import { SubscriptionService } from '../subscription/subscription.service';
 import { CheckoutSessionCompletedStrategy } from './strategies/checkout-session-completed.strategy';
+import { CustomerSubscriptionUpdatedStrategy } from './strategies/customer-subscription-updated.strategy';
 import { WebhookHandler } from './webhook-handler.service';
 import { WEBHOOK_STRATEGIES } from './constants/webhook.constants';
 
@@ -14,10 +15,17 @@ import { WEBHOOK_STRATEGIES } from './constants/webhook.constants';
   providers: [
     SubscriptionService,
     CheckoutSessionCompletedStrategy,
+    CustomerSubscriptionUpdatedStrategy,
     {
       provide: WEBHOOK_STRATEGIES,
-      useFactory: (...strategies: any[]) => strategies,
-      inject: [CheckoutSessionCompletedStrategy],
+      useFactory: (
+        checkoutStrategy: CheckoutSessionCompletedStrategy,
+        updateStrategy: CustomerSubscriptionUpdatedStrategy,
+      ) => [checkoutStrategy, updateStrategy],
+      inject: [
+        CheckoutSessionCompletedStrategy,
+        CustomerSubscriptionUpdatedStrategy,
+      ],
     },
     WebhookHandler,
     WebhookService,

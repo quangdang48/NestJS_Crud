@@ -38,6 +38,12 @@ export class StripeService {
     quantity: number;
     customerId: string;
   }): Promise<CheckoutLinkResponse> {
+    const successUrl =
+      process.env.CHECKOUT_SUCCESS_URL ||
+      'http://localhost:3333/payment/success';
+    const cancelUrl =
+      process.env.CHECKOUT_CANCEL_URL || 'http://localhost:3333/payment/cancel';
+
     const session = await this.stripe.checkout.sessions.create({
       mode: 'subscription',
       customer: data.customerId,
@@ -47,12 +53,8 @@ export class StripeService {
           quantity: data.quantity,
         },
       ],
-      success_url:
-        process.env.CHECKOUT_SUCCESS_URL ||
-        'http://localhost:3333/payment/success',
-      cancel_url:
-        process.env.CHECKOUT_CANCEL_URL ||
-        'http://localhost:3333/payment/cancel',
+      success_url: `${successUrl}?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: cancelUrl,
     });
 
     return {
@@ -76,5 +78,92 @@ export class StripeService {
   }
   async retrieveSubscription(subscriptionId: string) {
     return await this.stripe.subscriptions.retrieve(subscriptionId);
+  }
+
+  async updateSubscription(
+    subscriptionId: string,
+    newPriceId: string,
+  ): Promise<Stripe.Subscription> {
+    const subscription =
+      await this.stripe.subscriptions.retrieve(subscriptionId);
+
+    if (!subscription) {
+      throw new Error(`Subscription ${subscriptionId} not found`);
+    }
+
+    const subscriptionItemId = subscription.items.data[0].id;
+    const updatedSubscription = await this.stripe.subscriptions.update(
+      subscriptionId,
+      {
+        items: [
+          {
+            id: subscriptionItemId,
+            price: newPriceId,
+          },
+        ],
+        proration_behavior: 'always_invoice',
+      },
+    );
+
+    return updatedSubscription;
+  }
+  async createBillingPortalSession(
+    customerId: string,
+    configurationId?: string,
+  ): Promise<string> {
+    if (!customerId) {
+      throw new Error('Customer ID is required');
+    }
+
+    const portalConfig: Stripe.BillingPortal.SessionCreateParams = {
+      customer: customerId,
+      return_url:
+        process.env.BILLING_PORTAL_RETURN_URL ||
+        'http://localhost:3000/account',
+    };
+    portalConfig.configuration = configurationId;
+
+    const portalSession =
+      await this.stripe.billingPortal.sessions.create(portalConfig);
+    return portalSession.url;
+  }
+
+  async getActiveSubscription(
+    customerId: string,
+  ): Promise<Stripe.Subscription> {
+    const subscriptions = await this.stripe.subscriptions.list({
+      customer: customerId,
+      status: 'active',
+      limit: 1,
+    });
+
+    if (!subscriptions.data || subscriptions.data.length === 0) {
+      throw new Error('No active subscription found');
+    }
+
+    return subscriptions.data[0];
+  }
+
+  async getCustomerInvoices(
+    customerId: string,
+    limit: number = 10,
+  ): Promise<Stripe.Invoice[]> {
+    const invoices = await this.stripe.invoices.list({
+      customer: customerId,
+      limit: Math.min(limit, 100),
+    });
+
+    return invoices.data;
+  }
+
+  async getCustomerPaymentMethods(
+    customerId: string,
+  ): Promise<Stripe.PaymentMethod[]> {
+    const paymentMethods = await this.stripe.paymentMethods.list({
+      customer: customerId,
+      type: 'card',
+    });
+
+    return paymentMethods.data;
   }
 }

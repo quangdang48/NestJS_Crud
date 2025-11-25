@@ -43,6 +43,12 @@ enum WEBHOOK_STATUS {
   FAILED
   RECEIVED
 }
+enum BILLING_PORTAL_TYPE{
+  CANCEL_SUBSCRIPTION
+  INVOICE_HISTORY
+  PAYMENT_METHODS
+}
+
 model User {
   id                 String         @id @default(ulid())
   stripeCustomerId   String?
