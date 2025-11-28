@@ -2,8 +2,8 @@ import { SUBSCRIPTION_STATUS } from '@prisma/client';
 
 export class SubscriptionRequestDto {
   userId: string;
+  planId: string;
   stripeSubscriptionId: string;
-  stripeProductId: string;
-  stripePriceId: string;
+  stripeSiId: string;
   status: SUBSCRIPTION_STATUS;
 }

@@ -8,31 +8,33 @@ datasource db {
 }
 
 enum BILLING_CYCLE {
-  WEEKLY
   MONTHLY
   YEARLY
 }
 
 enum PLAN_TYPE {
-  FREE
   PRO
-  ENTERPRISE
 }
 
 enum CREDIT_TRACKING_TYPE {
-  INCREASE
-  DECREASE
+  CONSUME
+  RENEW_SUBSCRIPTION
+  GRANT
+  INITIAL_SUBSCRIPTION
 }
 
 enum SUBSCRIPTION_STATUS {
   ACTIVE
   CANCELLED
-  EXPIRED
 }
 
 enum CREDIT_SYSTEM_TYPE {
   AI_BLOG_GEN
   BLOG_SUMMARY
+  TEXT_TRANSLATION
+  TEXT_REWRITE    
+  GRAMMAR_CHECK
+  IMAGE_STORAGE
 }
 
 enum USER_ROLE {
@@ -41,12 +43,17 @@ enum USER_ROLE {
 }
 enum WEBHOOK_STATUS {
   FAILED
-  RECEIVED
+  SUCCESS
 }
-enum BILLING_PORTAL_TYPE{
+enum CUSTOMER_PORTAL_TYPE{
   CANCEL_SUBSCRIPTION
   INVOICE_HISTORY
   PAYMENT_METHODS
+}
+enum CREDIT_TRACKING_STATUS{
+  PENDING
+  COMPLETED
+  FAILED
 }
 
 model User {
@@ -108,9 +115,9 @@ model Plan {
 model Subscription {
   id                   String         @id @default(ulid())
   userId               String
-  stripeProductId      String
-  stripePriceId        String
+  planId               String
   stripeSubscriptionId String
+  stripeSiId           String
   status               SUBSCRIPTION_STATUS
   createdAt            DateTime       @default(now())
   updatedAt            DateTime       @updatedAt
@@ -122,8 +129,8 @@ model CreditSystem {
   name         String
   type         CREDIT_SYSTEM_TYPE
   description  String?
-  defaultCredit Int
-  isActive           Boolean        @default(true)
+  amount       Float
+  isActive     Boolean        @default(true)
   createdAt    DateTime          @default(now())
   updatedAt    DateTime          @updatedAt
   deletedAt    DateTime?
@@ -135,8 +142,8 @@ model CreditTracking {
   currency         String
   creditSystemType CREDIT_SYSTEM_TYPE?
   amount           Float
-  currentCredit    Float
   type             CREDIT_TRACKING_TYPE
+  status            CREDIT_TRACKING_STATUS
   subscriptionId      String?
   isActive           Boolean        @default(true)
   createdAt        DateTime         @default(now())

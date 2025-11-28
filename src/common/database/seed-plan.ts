@@ -6,21 +6,6 @@ export class SeedPlan {
     try {
       const plans = [
         {
-          id: '01KAFH089KHC8Y475BZMB8AY62',
-          name: 'TRIAL_PACKAGE',
-          description: 'Free trial package for new users',
-          price: 0,
-          durationDays: 7,
-          stripeProductId: 'prod_TSHpVJ4N3yJHkT',
-          stripePriceId: 'price_1SVNFO2caDcXa36zUZCgVdSV',
-          isDisplay: true,
-          isTrial: true,
-          trialDays: 7,
-          creditLimits: 500,
-          billingCycle: BILLING_CYCLE.WEEKLY,
-          planType: PLAN_TYPE.FREE,
-        },
-        {
           id: '01KAFH089KYRQ5WTK1051XS0MS',
           name: 'PRO_MONTHLY',
           description: 'Monthly subscription with full features',

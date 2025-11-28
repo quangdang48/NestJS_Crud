@@ -2,7 +2,6 @@ import { Injectable } from '@nestjs/common';
 import { WebhookStrategy } from '../interfaces/webhook-strategy.interface';
 import { StripeService } from 'src/modules/stripe/stripe.service';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { CREDIT_TRACKING_TYPE } from '@prisma/client';
 
 @Injectable()
 export class CustomerSubscriptionUpdatedStrategy implements WebhookStrategy {
@@ -48,22 +47,20 @@ export class CustomerSubscriptionUpdatedStrategy implements WebhookStrategy {
         .product as string;
       const newPriceId = stripeSubscription.items.data[0].price.id;
 
-      const updatedSubscription = await this.prismaService.subscription.update({
-        where: { id: subscription.id },
-        data: {
-          stripeProductId: newProductId,
-          stripePriceId: newPriceId,
-        },
-      });
-
       const newPlan = await this.prismaService.plan.findFirst({
         where: {
-          stripeProductId: updatedSubscription.stripeProductId,
-          stripePriceId: updatedSubscription.stripePriceId as string,
+          stripeProductId: newProductId,
+          stripePriceId: newPriceId,
           isActive: true,
         },
       });
 
+      await this.prismaService.subscription.update({
+        where: { id: subscription.id },
+        data: {
+          planId: newPlan.id,
+        },
+      });
       if (!newPlan) {
         throw new Error(
           `Plan with productId ${newProductId} and priceId ${newPriceId} not found`,
@@ -76,9 +73,9 @@ export class CustomerSubscriptionUpdatedStrategy implements WebhookStrategy {
           amount: stripeSubscription.items.data[0].price.unit_amount
             ? stripeSubscription.items.data[0].price.unit_amount / 100
             : 0,
-          currentCredit: newPlan.creditLimits,
           currency: stripeSubscription.items.data[0].price.currency,
-          type: CREDIT_TRACKING_TYPE.INCREASE,
+          status: 'COMPLETED',
+          type: 'INITIAL_SUBSCRIPTION',
           subscriptionId: stripeSubscriptionId,
         },
       });

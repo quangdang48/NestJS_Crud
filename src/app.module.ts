@@ -10,6 +10,7 @@ import { SubscriptionModule } from './modules/subscription/subscription.module';
 import { PaymentModule } from '@/modules/payment/payment.module';
 import { WebhookModule } from '@/modules/webhook/webhook.module';
 import { PortalModule } from './modules/portal/portal.module';
+import { CreditTrackingModule } from './modules/credit-tracking/credit-tracking.module';
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { PortalModule } from './modules/portal/portal.module';
     BlogModule,
     UserModule,
     PlanModule,
+    CreditTrackingModule,
     PaymentModule,
     SubscriptionModule,
     WebhookModule,

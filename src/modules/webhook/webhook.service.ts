@@ -36,7 +36,7 @@ export class WebhookService {
       data: {
         event: event.type,
         payload: JSON.parse(JSON.stringify(event)),
-        status: WEBHOOK_STATUS.RECEIVED,
+        status: WEBHOOK_STATUS.SUCCESS,
         receivedAt: new Date(),
       },
     });

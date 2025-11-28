@@ -3,7 +3,7 @@ import { PortalService } from './portal.service';
 import { AuthGuard } from 'src/common/guards/auth.guard';
 import { Request } from 'express';
 import { BillingPortalResponse } from './dto/billing-portal-response.dto';
-import { BILLING_PORTAL_TYPE } from '@prisma/client';
+import { CUSTOMER_PORTAL_TYPE } from '@prisma/client';
 import { ApiProperty, ApiQuery } from '@nestjs/swagger';
 
 @Controller('portal')
@@ -16,7 +16,7 @@ export class PortalController {
   })
   @ApiQuery({
     name: 'portal',
-    enum: BILLING_PORTAL_TYPE,
+    enum: CUSTOMER_PORTAL_TYPE,
     description: 'Type of billing portal to access',
     required: true,
   })
@@ -24,7 +24,7 @@ export class PortalController {
   @UseGuards(AuthGuard)
   async getBillingPortal(
     @Req() req: Request,
-    @Query('portal') portalType: BILLING_PORTAL_TYPE,
+    @Query('portal') portalType: CUSTOMER_PORTAL_TYPE,
   ): Promise<BillingPortalResponse> {
     const userId = req.user.userId;
     return this.portalService.getBillingPortalUrl(userId, portalType);

@@ -26,9 +26,9 @@ export class SubscriptionService {
     return this.prismaService.subscription.create({
       data: {
         userId: dto.userId,
-        stripeProductId: dto.stripeProductId,
+        planId: dto.planId,
+        stripeSiId: dto.stripeSiId,
         stripeSubscriptionId: dto.stripeSubscriptionId,
-        stripePriceId: dto.stripePriceId,
         status: dto.status,
       },
     });
@@ -49,8 +49,7 @@ export class SubscriptionService {
     }
     const plan = await this.prismaService.plan.findFirst({
       where: {
-        stripeProductId: subscription.stripeProductId,
-        stripePriceId: subscription.stripePriceId,
+        id: subscription.planId,
         isActive: true,
       },
     });
@@ -88,7 +87,7 @@ export class SubscriptionService {
 
     const currentPlan = await this.prismaService.plan.findFirst({
       where: {
-        stripeProductId: currentSubscription.stripeProductId,
+        id: currentSubscription.planId,
         isActive: true,
       },
     });

@@ -29,39 +29,47 @@ export class CheckoutSessionCompletedStrategy implements WebhookStrategy {
       );
     }
 
-    const dto = new SubscriptionRequestDto();
-    dto.userId = user.id;
-    dto.stripeSubscriptionId = event.data.object.subscription as string;
-    dto.status = SUBSCRIPTION_STATUS.ACTIVE;
-    const stripeSubscription = await this.stripeService.retrieveSubscription(
-      dto.stripeSubscriptionId,
-    );
-    dto.stripeProductId = stripeSubscription.items.data[0].price
-      .product as string;
-    dto.stripePriceId = stripeSubscription.items.data[0].price.id;
-    await this.subscriptionService.createFromWebhook(dto);
+    const stripeSubscriptionId = event.data.object.subscription as string;
+    const stripeSubscription =
+      await this.stripeService.retrieveSubscription(stripeSubscriptionId);
 
+    const stripeProductId = stripeSubscription.items.data[0].price
+      .product as string;
+    const stripePriceId = stripeSubscription.items.data[0].price.id;
+    const stripeSiId = stripeSubscription.items.data[0].id;
+
+    // Find plan by Stripe IDs
     const plan = await this.prismaService.plan.findFirst({
       where: {
-        stripePriceId: dto.stripePriceId,
-        stripeProductId: dto.stripeProductId,
+        stripePriceId: stripePriceId,
+        stripeProductId: stripeProductId,
+        isActive: true,
       },
     });
     if (!plan) {
       throw new Error(
-        `Plan with priceId ${dto.stripePriceId} and productId ${dto.stripeProductId} not found`,
+        `Plan with priceId ${stripePriceId} and productId ${stripeProductId} not found`,
       );
     }
+
+    // Create subscription with planId
+    const dto = new SubscriptionRequestDto();
+    dto.userId = user.id;
+    dto.planId = plan.id;
+    dto.stripeSubscriptionId = stripeSubscriptionId;
+    dto.stripeSiId = stripeSiId;
+    dto.status = SUBSCRIPTION_STATUS.ACTIVE;
+    const subscription = await this.subscriptionService.createFromWebhook(dto);
+
+    // Create credit tracking for initial subscription
     await this.prismaService.creditTracking.create({
       data: {
         userId: user.id,
-        amount: stripeSubscription.items.data[0].price.unit_amount
-          ? stripeSubscription.items.data[0].price.unit_amount / 100
-          : 0,
-        currentCredit: plan.creditLimits,
-        currency: stripeSubscription.items.data[0].price.currency,
-        type: CREDIT_TRACKING_TYPE.INCREASE,
-        subscriptionId: dto.stripeSubscriptionId,
+        amount: plan.creditLimits,
+        currency: stripeSubscription.items.data[0].price.currency || 'usd',
+        type: CREDIT_TRACKING_TYPE.INITIAL_SUBSCRIPTION,
+        status: 'COMPLETED',
+        subscriptionId: subscription.id,
       },
     });
   }

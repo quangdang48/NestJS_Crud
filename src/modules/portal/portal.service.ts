@@ -6,7 +6,7 @@ import {
 import { StripeService } from '../stripe/stripe.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { BillingPortalResponse } from './dto/billing-portal-response.dto';
-import { BILLING_PORTAL_TYPE } from '@prisma/client';
+import { CUSTOMER_PORTAL_TYPE } from '@prisma/client';
 
 @Injectable()
 export class PortalService {
@@ -17,7 +17,7 @@ export class PortalService {
 
   async getBillingPortalUrl(
     userId: string,
-    billingPortalType: BILLING_PORTAL_TYPE,
+    billingPortalType: CUSTOMER_PORTAL_TYPE,
   ): Promise<BillingPortalResponse> {
     const user = await this.prismaService.user.findFirst({
       where: { id: userId, isActive: true },
@@ -40,13 +40,13 @@ export class PortalService {
 
     return BillingPortalResponse.create(portalUrl);
   }
-  getConfigurationId(billingPortalType: BILLING_PORTAL_TYPE): string {
+  getConfigurationId(billingPortalType: CUSTOMER_PORTAL_TYPE): string {
     switch (billingPortalType) {
-      case BILLING_PORTAL_TYPE.CANCEL_SUBSCRIPTION:
+      case CUSTOMER_PORTAL_TYPE.CANCEL_SUBSCRIPTION:
         return process.env.CONFIG_ID_CANCEL_SUBSCRIPTIONS;
-      case BILLING_PORTAL_TYPE.INVOICE_HISTORY:
+      case CUSTOMER_PORTAL_TYPE.INVOICE_HISTORY:
         return process.env.CONFIG_ID_VIEW_HISTORY_INVOICE;
-      case BILLING_PORTAL_TYPE.PAYMENT_METHODS:
+      case CUSTOMER_PORTAL_TYPE.PAYMENT_METHODS:
         return process.env.CONFIG_ID_VIEW_PAYMENT_METHOD;
       default:
         throw new BadRequestException('Invalid billing portal type');
